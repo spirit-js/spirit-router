@@ -1,6 +1,6 @@
 const rewire = require("rewire")
-const response = rewire("../../lib/router/response")
-const response_map = require("../../lib/router/response-map")
+const response = rewire("../lib/response")
+const response_map = require("../lib/response-map")
 
 describe("router.response", () => {
 
@@ -89,21 +89,8 @@ describe("router.response", () => {
   })
 
   describe("response", () => {
-    const render = response.__get__("render")
-    const core_response = require("../../lib/core/response")
-    const _send = core_response.send
-    response.__set__("core_response", core_response)
-
-    beforeEach(() => {
-      core_response.send = () => {}
-    })
-
-    afterEach(() => {
-      response.__set__("render", render)
-      core_response.send = _send
-    })
-
     it("calls render then core.send", () => {
+      pending()
       let called = ""
       response.__set__("render", (req, rmap, middlewares) => {
         expect(req).toBe("req")
@@ -120,6 +107,7 @@ describe("router.response", () => {
     })
 
     it("if value, converts to response maps", () => {
+      pending()
       response.__set__("render", (req, rmap, middlewares) => {
         expect(rmap.status).toBe(200)
         expect(rmap.body).toBe(123)
@@ -128,6 +116,7 @@ describe("router.response", () => {
     })
 
     it("if response map already, just passes it to render", () => {
+      pending()
       response.__set__("render", (req, rmap, middlewares) => {
         expect(rmap).toEqual(jasmine.objectContaining({
           status: 123,

@@ -1,4 +1,4 @@
-const routes = require("../../lib/router/routes")
+const routes = require("../lib/routes")
 
 describe("router.routes", () => {
 

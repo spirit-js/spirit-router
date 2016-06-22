@@ -1,7 +1,5 @@
 /*
- * Higher level abstraction over core.response
- * mostly centered around rendering response maps based on
- * what was returned by the user
+ * rendering responses
  *
  * Has a middleware system in place, mostly meant for developers
  * NOTE could use the same abstraction with define/reducep/mapl
@@ -11,8 +9,6 @@
  *
  */
 
-const core = require("../core/core")
-const core_response = require("../core/response")
 const response_map = require("./response-map")
 
 // response middlewares

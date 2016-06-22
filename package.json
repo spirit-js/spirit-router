@@ -22,7 +22,7 @@
   ],
   "author": "hnry",
   "license": "ISC",
-  "homepage": "https://github.com/hnry/sprit-router",
+  "homepage": "https://github.com/spirit-js/sprit-router",
   "devDependencies": {
     "babel-cli": "^6.8.0",
     "babel-preset-es2015": "^6.6.0",
@@ -32,8 +32,9 @@
     "rewire": "^2.5.1"
   },
   "dependencies": {
-    "spirit": "^0.0.1",
-    "parseurl": "^1.3.1",
-    "path-to-regexp": "^1.2.1"
+    "bluebird": "^3.4.1",
+    "path-to-regexp": "^1.2.1",
+    "send": "^0.14.1",
+    "spirit": "0.0.x"
   }
 }
