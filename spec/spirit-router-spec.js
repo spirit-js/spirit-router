@@ -72,4 +72,40 @@ describe("router-spec", () => {
       done()
     })
   })
+
+  it("can specify a prefix used for routing (with define)", (done) => {
+    const route_b = route.define("/b", [
+      ["get", "/b", [], "b"]
+    ])
+    const route_a = route.define("/a", [
+      ["get", "/a", [], "a"]
+    ])
+
+    const result = route_a({ method: "get", url: "/a/a" })
+    result.then((resp) => {
+      expect(resp.body).toBe("a")
+      return route_b({ method: "get", url: "/b/b" })
+    }).then((resp) => {
+      expect(resp.body).toBe("b")
+      done()
+    })
+  })
+
+  it("the prefix when nested will carry over", (done) => {
+    const route_b = route.define("/b", [
+      ["get", "/b", [], "b"]
+    ])
+    const route_a = route.define("/a", [
+      ["get", "/a", [], "a"],
+      route_b
+    ])
+
+    const result = route_a({ method: "get", url: "/a/b/b" })
+    result.then((resp) => {
+      expect(resp.body).toBe("b")
+      done()
+    })
+  })
+
+  it("does dep injection (destructures) the input (request) for routes")
 })

@@ -13,7 +13,6 @@ const Promise = require("bluebird")
  * @return {array}
  */
 const _lookup = (route, req_method, req_path) => {
-  // lower case route.method here instead of in routes.compile()
   if (route.method.toLowerCase() === req_method.toLowerCase() || route.method === "*") {
     const params = route.path.re.exec(req_path)
     if (params) {
@@ -69,9 +68,20 @@ const _destructure = (args, obj) => {
   })
 }
 
+/**
+ * wraps a Route with router logic
+ * If the routing passes, it sets the params on
+ * the request map
+ *
+ * And then calls and returns the Route function
+ *
+ * @param {Route} Route - a Route
+ * @return {function}
+ */
 const wrap_router = (Route) => {
-  return (request) => {
-    const params = _lookup(Route, request.method, request.url)
+  return (request, prefix) => {
+    const url = request.url.substring(prefix.length)
+    const params = _lookup(Route, request.method, url)
     if (params) {
       request.params = routes.decompile(Route, params)
       return call_route(Route.body, Route.args, request)
@@ -85,20 +95,28 @@ const call_route = (fn, args, request) => {
   return p_utils.resolve_response(ret)
 }
 
-const reduce_r = (arr, request) => {
+/**
+ * Iterate over an array of wrapped Routes
+ * Stopping when a result is returned by a Route
+ *
+ * @param {array} arr - an array of wrapped Routes
+ * @param {request-map} request - request map
+ * @return {Promise} a promise of the result of a Route
+ */
+const reduce_r = (arr, request, prefix) => {
   return arr.reduce((p, fn) => {
     return p.then((v) => {
       if (typeof v !== "undefined") {
         return v // if there is a value, stop iterating
       }
       // wrap_router()(request)
-      return fn(request)
+      return fn(request, prefix)
     })
   }, Promise.resolve())
 }
 
-const _handler = (compiled_routes, request) => {
-    return reduce_r(compiled_routes, request).then((resp) => {
+const _handler = (compiled_routes, request, prefix) => {
+  return reduce_r(compiled_routes, request, prefix).then((resp) => {
       if (typeof resp !== "undefined") {
         return response.response(request, resp)
       }
@@ -107,8 +125,15 @@ const _handler = (compiled_routes, request) => {
 }
 
 /**
- * "compiles" routes if it isn't already compiled
- * returning back a route handler function
+ * Returns a spirit handler
+ *
+ * The handler reduces over `arr_routes`, compiling
+ * each element in `arr_routes` to be a Route.
+ * And wrapping each Route with a spirit handler
+ * that acts as a router
+ *
+ * The `named` paramter is used for routing
+ * It is matched against the prefix of a URL
  *
  * @public
  * @param {string} named - optional prefix to match
@@ -126,13 +151,15 @@ const define = (named, arr_routes) => {
       // already been wrapped & compiled
       return _route
     }
-    _route[1] = named + _route[1]
     return wrap_router(routes.compile.apply(undefined, _route))
   })
 
-  return function(request) {
-    if (request.url.indexOf(named) === 0) {
-      return _handler(compile_and_wrap, request)
+  return function(request, prefix) {
+    if (typeof prefix !== "string") prefix = ""
+    prefix = prefix + named
+
+    if (request.url.indexOf(prefix) === 0) {
+      return _handler(compile_and_wrap, request, prefix)
     }
   }
 }
