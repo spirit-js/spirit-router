@@ -1,5 +1,6 @@
-const spirit = require("../../index")
-const route = spirit.route
+const spirit = require("spirit")
+const router = require("../../index")
+const route = router.route
 
 const admin_index = () => {
   return "admin index"
@@ -29,7 +30,7 @@ const app = route.define([
   //routes.wrap(admin, [])
 ])
 
-const site = spirit.node(app, [])
+const site = spirit.node.adapter(app, [])
 
 const http = require("http")
 http.createServer(site).listen(3009)
