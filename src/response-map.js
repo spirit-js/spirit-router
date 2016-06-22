@@ -4,7 +4,7 @@
  * with chainable helper functions
  */
 
-const core_response = require("../core/response")
+const spirit = require("spirit")
 const mime = require("send").mime
 mime.default_type = undefined
 
@@ -55,7 +55,7 @@ const is_response_map = (obj) => {
 
 const create = (body) => {
   let rmap
-  if (core_response.is_response(body)) {
+  if (spirit.node.response.is_response(body)) {
     rmap = new ResponseMap(body.body).statusCode(body.status)
     rmap.headers = body.headers
   } else {

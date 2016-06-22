@@ -1,4 +1,4 @@
-const response_map = require("../../lib/router/response-map")
+const response_map = require("../lib/response-map")
 
 describe("response map", () => {
 

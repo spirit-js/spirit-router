@@ -1,7 +1,6 @@
 const routes = require("./routes")
 const response = require("./response")
-const p_utils = require("../core/promise_utils")
-
+const p_utils = require("spirit").utils
 const Promise = require("bluebird")
 
 /**
@@ -69,8 +68,6 @@ const _destructure = (args, obj) => {
     return v
   })
 }
-
-/////////////////////////////////////////// re-work
 
 const wrap_router = (Route) => {
   return (request) => {
