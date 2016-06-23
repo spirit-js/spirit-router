@@ -5,7 +5,7 @@
  */
 
 const spirit = require("spirit")
-const mime = require("send").mime
+const mime = require("mime")
 mime.default_type = undefined
 
 class ResponseMap {

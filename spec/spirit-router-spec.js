@@ -107,5 +107,83 @@ describe("router-spec", () => {
     })
   })
 
-  it("does dep injection (destructures) the input (request) for routes")
+  it("does dep injection by destructuring the input (request) for routes", (done) => {
+    const test = (arg) => {
+      expect(arg).toBe("/a/a")
+      return arg
+    }
+    const r = route.define("/a", [
+      ["get", "/a", ["url"], test]
+    ])
+
+    const result = r({ method: "get", url: "/a/a" })
+    result.then((resp) => {
+      expect(resp.body).toBe("/a/a")
+      done()
+    })
+  })
+
+  it("can 'pass' on a route by returning undefined, moving to the next route that matches", (done) => {
+    const test = () => {}
+    const hi = () => { return "hi" }
+
+    const r = route.define([
+      ["get", "/a", [], test],
+      ["get", "/a", [], test],
+      ["get", "/a", [], hi],
+      ["get", "/a", [], "no"]
+    ])
+
+    const result = r({ method: "get", url: "/a" })
+    result.then((resp) => {
+      expect(resp.body).toBe("hi")
+      done()
+    })
+  })
+
+  it("converts return values of a Route or a Routes function to be a promise response map", (done) => {
+    const test = () => {
+      return "hello world"
+    }
+   const r = route.define([
+      ["get", "/", [], test],
+      ["get", "/string", [], "hello world!"]
+    ])
+
+    const result = r({ method: "get", url: "/" })
+    result.then((resp) => {
+      expect(resp).toEqual(jasmine.objectContaining({
+        status: 200,
+        body: "hello world"
+      }))
+      return r({ method: "get", url: "/string" })
+    }).then((resp) => {
+      expect(resp).toEqual(jasmine.objectContaining({
+        status: 200,
+        body: "hello world!"
+      }))
+      done()
+    })
+  })
+
+  it("'params' does not leak into other routes", (done) => {
+    const test = (arg) => {
+      expect(arg).toBe("test")
+    }
+    const test2 = (arg) => {
+      expect(arg).toBe("/test")
+      return arg
+    }
+    const r = route.define([
+      ["get", "/:url", ["url"], test],
+      ["get", "/test", ["url"], test2]
+    ])
+
+    const result = r({ method: "get", url: "/test" })
+    result.then((resp) => {
+      done()
+    })
+  })
+
+  it("can wrap spirit middleware with a Route or define")
 })
