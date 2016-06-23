@@ -181,7 +181,6 @@ const wrap = (route, middleware) => {
 module.exports = {
   _destructure,
   _lookup,
-
   define, // public
   reduce_r,
   call_route,

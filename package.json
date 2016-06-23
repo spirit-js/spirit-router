@@ -33,8 +33,8 @@
   },
   "dependencies": {
     "bluebird": "^3.4.1",
+    "mime": "^1.3.4",
     "path-to-regexp": "^1.2.1",
-    "send": "^0.14.1",
     "spirit": "0.0.x"
   }
 }
