@@ -1,6 +1,6 @@
 const routes = require("./routes")
 const response = require("./response")
-const p_utils = require("spirit").utils
+const spirit = require("spirit")
 const Promise = require("bluebird")
 
 /**
@@ -79,20 +79,28 @@ const _destructure = (args, obj) => {
  * @return {function}
  */
 const wrap_router = (Route) => {
-  return (request, prefix) => {
+  return (request, prefix, middleware) => {
     const url = request.url.substring(prefix.length)
     const params = _lookup(Route, request.method, url)
     if (params) {
       request.params = routes.decompile(Route, params)
-      return call_route(Route.body, Route.args, request)
+      const handler = (req) => {
+        return call_route(Route.body, Route.args, req)
+      }
+      return spirit.compose(handler, middleware)(request)
     }
   }
 }
 
 const call_route = (fn, args, request) => {
   let de_args = _destructure(args, request)
-  const ret = p_utils.callp(fn, de_args)
-  return p_utils.resolve_response(ret)
+  const ret = spirit.utils.callp(fn, de_args)
+  return spirit.utils.resolve_response(ret).then((resp) => {
+    if (typeof resp !== "undefined") {
+      return response.response(request, resp)
+    }
+    return resp
+  })
 }
 
 /**
@@ -110,18 +118,9 @@ const reduce_r = (arr, request, prefix) => {
         return v // if there is a value, stop iterating
       }
       // wrap_router()(request)
-      return fn(request, prefix)
+      return fn(request, prefix, [])
     })
   }, Promise.resolve())
-}
-
-const _handler = (compiled_routes, request, prefix) => {
-  return reduce_r(compiled_routes, request, prefix).then((resp) => {
-      if (typeof resp !== "undefined") {
-        return response.response(request, resp)
-      }
-      return resp
-    })
 }
 
 /**
@@ -154,27 +153,28 @@ const define = (named, arr_routes) => {
     return wrap_router(routes.compile.apply(undefined, _route))
   })
 
-  return function(request, prefix) {
+  return function(request, prefix, middleware) {
+    if (!middleware) middleware = []
+
     if (typeof prefix !== "string") prefix = ""
     prefix = prefix + named
 
     if (request.url.indexOf(prefix) === 0) {
-      return _handler(compile_and_wrap, request, prefix)
+      const handler = (req) => {
+        return reduce_r(compile_and_wrap, req, prefix)
+      }
+      return spirit.compose(handler, middleware)(request)
     }
   }
 }
 
 const wrap = (route, middleware) => {
-  // check if compiled already, if not compile
+  if (typeof route !== "function") {
+    route = wrap_router(routes.compile.apply(undefined, route))
+  }
 
-  return (request) => {
-    const r = route(request)
-    if (r) {
-      // wrap r
-      // run middleware
-      // return promise
-    }
-    return r
+  return (request, prefix) => {
+    return route(request, prefix, middleware)
   }
 }
 

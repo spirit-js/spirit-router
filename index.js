@@ -8,6 +8,7 @@ var exports = {
 }
 
 exports.route.define = router.define
+exports.route.wrap = router.wrap
 exports.route.verb = routes.verb
 
 // TODO
