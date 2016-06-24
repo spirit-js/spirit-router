@@ -185,5 +185,82 @@ describe("router-spec", () => {
     })
   })
 
-  it("can wrap spirit middleware with a Route or define")
+  it("can wrap spirit middleware with a Route", (done) => {
+    const test = (called) => {
+      expect(called).toBe("12")
+      return "123"
+    }
+
+    const middleware = [
+      (handler) => {
+        return (request) => {
+          request.called += "2"
+          return handler(request).then((resp) => {
+            expect(resp.body).toBe("123")
+            resp.body += "a"
+            return resp
+          })
+        }
+      },
+      (handler) => {
+        return (request) => {
+          request.called = "1"
+          return handler(request).then((resp) => {
+            resp.body += "b"
+            return resp
+          })
+        }
+      }
+    ]
+
+    const r = route.define([
+      router.route.wrap(["get", "/", ["called"], test], middleware)
+    ])
+
+    const result = r({ method: "get", url: "/" })
+    result.then((resp) => {
+      expect(resp.body).toBe("123ab")
+      done()
+    })
+  })
+
+  it("can wrap the result of define with middleware", (done) => {
+    const test = (called) => {
+      expect(called).toBe("1212")
+      return "123"
+    }
+
+    const middleware = [
+      (handler) => {
+        return (request) => {
+          request.called += "2"
+          return handler(request).then((resp) => {
+            resp.body += "a"
+            return resp
+          })
+        }
+      },
+      (handler) => {
+        return (request) => {
+          request.called += "1"
+          return handler(request).then((resp) => {
+            resp.body += "b"
+            return resp
+          })
+        }
+      }
+    ]
+
+    let r = route.define([
+      router.route.wrap(["get", "/", ["called"], test], middleware)
+    ])
+
+    const rr = router.route.wrap(r, middleware)
+
+    const result = rr({ method: "get", url: "/", called: "" })
+    result.then((resp) => {
+      expect(resp.body).toBe("123abab")
+      done()
+    })
+  })
 })
