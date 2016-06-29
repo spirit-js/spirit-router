@@ -91,7 +91,6 @@ const response = (req, body) => {
   if (!response_map.is_response_map(body)) {
     rmap = response_map.create(body)
   }
-
   return render(req, rmap, middlewares.list())
 }
 

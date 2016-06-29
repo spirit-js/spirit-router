@@ -78,29 +78,27 @@ const _destructure = (args, obj) => {
  * @param {Route} Route - a Route
  * @return {function}
  */
-const wrap_router = (Route) => {
+const router = (Route) => {
   return (request, prefix, middleware) => {
     const url = request.url.substring(prefix.length)
     const params = _lookup(Route, request.method, url)
     if (params) {
       request.params = routes.decompile(Route, params)
-      const handler = (req) => {
-        return call_route(Route.body, Route.args, req)
-      }
-      return spirit.compose(handler, middleware)(request)
+      return spirit.compose(route_handler(Route.body, Route.args), middleware)(request)
     }
   }
 }
 
-const call_route = (fn, args, request) => {
-  let de_args = _destructure(args, request)
-  const ret = spirit.utils.callp(fn, de_args)
-  return spirit.utils.resolve_response(ret).then((resp) => {
-    if (typeof resp !== "undefined") {
-      return response.response(request, resp)
-    }
-    return resp
-  })
+const route_handler = (fn, args) => {
+  return (request) => {
+    const r = spirit.utils.callp(fn, _destructure(args, request))
+    return spirit.utils.resolve_response(r).then((resp) => {
+      if (typeof resp !== "undefined") {
+        return response.response(request, resp)
+      }
+      return resp
+    })
+  }
 }
 
 /**
@@ -117,7 +115,7 @@ const reduce_r = (arr, request, prefix) => {
       if (typeof v !== "undefined") {
         return v // if there is a value, stop iterating
       }
-      // wrap_router()(request)
+      // router()(request)
       return fn(request, prefix, [])
     })
   }, Promise.resolve())
@@ -150,12 +148,11 @@ const define = (named, arr_routes) => {
       // already been wrapped & compiled
       return _route
     }
-    return wrap_router(routes.compile.apply(undefined, _route))
+    return router(routes.compile.apply(undefined, _route))
   })
 
   return function(request, prefix, middleware) {
     if (!middleware) middleware = []
-
     if (typeof prefix !== "string") prefix = ""
     prefix = prefix + named
 
@@ -170,9 +167,8 @@ const define = (named, arr_routes) => {
 
 const wrap = (route, middleware) => {
   if (typeof route !== "function") {
-    route = wrap_router(routes.compile.apply(undefined, route))
+    route = router(routes.compile.apply(undefined, route))
   }
-
   return (request, prefix) => {
     return route(request, prefix, middleware)
   }
@@ -183,7 +179,7 @@ module.exports = {
   _lookup,
   define, // public
   reduce_r,
-  call_route,
+  route_handler,
   wrap,   // public
-  wrap_router
+  router
 }
