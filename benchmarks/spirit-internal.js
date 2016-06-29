@@ -10,69 +10,61 @@
 const Benchmark = require("benchmark")
 const suite = new Benchmark.Suite
 
-const {define, routes, spirit} = require("../index")
-const mock_response = require("../spec/support/mock-response")
+const {route} = require("../index")
 
 const assert = require("assert")
 
-const other = define("/other", [
-  routes.get("/a", [], () => { return "nope" }),
-  routes.get("/b", [], () => { return "nope" })
+const other = route.define("/other", [
+  route.get("/a", [], () => { return "nope" }),
+  route.get("/b", [], () => { return "nope" })
 ])
 
-const long_routes = define([
-  routes.get("/a", [], () => { return "nope" }),
-  routes.get("/b", [], () => { return "nope" }),
-  routes.get("/c", [], () => { return "nope" }),
-  routes.get("/c", [], () => { return "nope" }),
-  routes.get("/d", [], () => { return "nope" }),
-  routes.get("/e", [], () => { return "nope" }),
-  routes.get("/f", [], () => { return "nope" }),
-  routes.get("/g", [], () => { return "nope" }),
-  routes.get("/h", [], () => { return "nope" }),
-  routes.get("/i", [], () => { return "nope" }),
-  routes.get("/j", [], () => { return "nope" }),
-  routes.get("/", [], () => { return "Hello World" })
+const long_routes = route.define([
+  route.get("/a", [], () => { return "nope" }),
+  route.get("/b", [], () => { return "nope" }),
+  route.get("/c", [], () => { return "nope" }),
+  route.get("/c", [], () => { return "nope" }),
+  route.get("/d", [], () => { return "nope" }),
+  route.get("/e", [], () => { return "nope" }),
+  route.get("/f", [], () => { return "nope" }),
+  route.get("/g", [], () => { return "nope" }),
+  route.get("/h", [], () => { return "nope" }),
+  route.get("/i", [], () => { return "nope" }),
+  route.get("/j", [], () => { return "nope" }),
+  route.get("/", [], () => { return "Hello World" })
 ])
 
-const single_route = define([
-  routes.get("/", [], () => { return "Hello World" })
+const single_route = route.define([
+  route.get("/", [], () => { return "Hello World" })
 ])
 
 const test_long_route = function(cb) {
-  const handler = spirit(define([
-    (req, res, next) => {
-      next()
-    },
-    routes.route(other),
-    routes.route(long_routes)
-  ]))
-  handler({ method: "GET", url: "/" }, mock_response(cb))
+  const app = route.define([
+    other,
+    long_routes
+  ])
+  app({ method: "GET", url: "/" }).then((resp) => {
+    cb(resp)
+  })
 }
 
 const test_single_route = function(cb) {
-  const handler = spirit(define([
-    (req, res, next) => {
-      next()
-    },
-    routes.route(single_route)
-  ]))
-  handler({ method: "GET", url: "/" }, mock_response(cb))
+  const app = route.define([
+    single_route
+  ])
+  app({ method: "GET", url: "/" }).then((resp) => {
+    cb(resp)
+  })
 }
 
 // tests the benchmark tests before actually running
-test_long_route(function(result) {
+const tester = function(result) {
   assert.strictEqual(result.status, 200)
   assert.strictEqual(result.body, "Hello World")
-})
-
-test_single_route(function(result) {
-  assert.strictEqual(result.status, 200)
-  assert.strictEqual(result.body, "Hello World")
-})
-
-
-
+  console.log(result)
+}
+test_long_route(tester)
+test_single_route(tester)
 
 
 suite.add("long routes", function(deferred) {
