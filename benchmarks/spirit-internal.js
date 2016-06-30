@@ -57,6 +57,24 @@ const test_single_route = function(cb) {
   })
 }
 
+const test_multi_route = function(cb) {
+  const app = route.define([
+    other,
+    long_routes
+  ])
+  app({ method: "GET", url: "/b" }).then((resp) => {
+    app({ method: "GET", url: "/other/a" }).then((resp) => {
+      app({ method: "GET", url: "/c" }).then((resp) => {
+        app({ method: "GET", url: "/e" }).then((resp) => {
+          app({ method: "GET", url: "/" }).then((resp) => {
+            cb(resp)
+          })
+        })
+      })
+    })
+  })
+}
+
 // tests the benchmark tests before actually running
 const tester = function(result) {
   assert.strictEqual(result.status, 200)
@@ -65,6 +83,7 @@ const tester = function(result) {
 }
 test_long_route(tester)
 test_single_route(tester)
+test_multi_route(tester)
 
 
 suite.add("long routes", function(deferred) {
@@ -74,6 +93,11 @@ suite.add("long routes", function(deferred) {
 }, { defer: true })
   .add("single route", function(deferred) {
     test_single_route(function() {
+      deferred.resolve()
+    })
+  }, { defer: true })
+  .add("multi route", function(deferred) {
+    test_multi_route(function() {
       deferred.resolve()
     })
   }, { defer: true })
