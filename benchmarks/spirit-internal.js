@@ -10,7 +10,7 @@
 const Benchmark = require("benchmark")
 const suite = new Benchmark.Suite
 
-const {route} = require("../index")
+const {route, router} = require("../index")
 
 const assert = require("assert")
 
@@ -38,40 +38,26 @@ const single_route = route.define([
   route.get("/", [], () => { return "Hello World" })
 ])
 
+const app1 = route.define([
+  other,
+  long_routes
+])
+const tlr = router(app1);
 const test_long_route = function(cb) {
-  const app = route.define([
-    other,
-    long_routes
-  ])
-  app({ method: "GET", url: "/" }).then((resp) => {
+  tlr({ method: "get", url: "/" }).then((resp) => {
     cb(resp)
   })
 }
+
+const app2 = route.define([
+  single_route
+])
+
+const tsr = router(app2)
 
 const test_single_route = function(cb) {
-  const app = route.define([
-    single_route
-  ])
-  app({ method: "GET", url: "/" }).then((resp) => {
+  tsr({ method: "get", url: "/" }).then((resp) => {
     cb(resp)
-  })
-}
-
-const test_multi_route = function(cb) {
-  const app = route.define([
-    other,
-    long_routes
-  ])
-  app({ method: "GET", url: "/b" }).then((resp) => {
-    app({ method: "GET", url: "/other/a" }).then((resp) => {
-      app({ method: "GET", url: "/c" }).then((resp) => {
-        app({ method: "GET", url: "/e" }).then((resp) => {
-          app({ method: "GET", url: "/" }).then((resp) => {
-            cb(resp)
-          })
-        })
-      })
-    })
   })
 }
 
@@ -83,7 +69,6 @@ const tester = function(result) {
 }
 test_long_route(tester)
 test_single_route(tester)
-test_multi_route(tester)
 
 
 suite.add("long routes", function(deferred) {
@@ -93,11 +78,6 @@ suite.add("long routes", function(deferred) {
 }, { defer: true })
   .add("single route", function(deferred) {
     test_single_route(function() {
-      deferred.resolve()
-    })
-  }, { defer: true })
-  .add("multi route", function(deferred) {
-    test_multi_route(function() {
       deferred.resolve()
     })
   }, { defer: true })

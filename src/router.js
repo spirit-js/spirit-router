@@ -13,12 +13,13 @@ const Promise = require("bluebird")
  * @return {array}
  */
 const _lookup = (route, req_method, req_path) => {
-  if (route.method.toLowerCase() === req_method.toLowerCase() || route.method === "*") {
+  if (route.method.toLowerCase() === req_method.toLowerCase()) {
     const params = route.path.re.exec(req_path)
     if (params) {
       return params
     }
   }
+  return undefined
 }
 
 /**
@@ -78,19 +79,41 @@ const _destructure = (args, obj) => {
  * @param {Route} Route - a Route
  * @return {function}
  */
-const router = (Route) => {
-  return (request, prefix, middleware) => {
-    const url = request.url.substring(prefix.length)
-    const params = _lookup(Route, request.method, url)
-    if (params) {
-      request.params = routes.decompile(Route, params)
-      return spirit.compose(route_handler(Route.body, Route.args), middleware)(request)
-    }
+const router = (arr_routes) => {
+  arr_routes = arr_routes.map(function(r) {
+    return poop.bind(undefined, r)
+  })
+
+  return function(request) {
+    const pp = Promise.resolve()
+    return arr_routes.reduce(function(p, fn) {
+      return p.then(function(v) {
+        if (typeof v !== "undefined") {
+          return v // if there is a value, stop iterating
+        }
+        return fn.call(undefined, request)
+      })
+    }, pp)
   }
 }
 
-const route_handler = (fn, args) => {
-  return (request) => {
+const poop = (Route, request) => {
+  //const url = request.url.substring(Route.prefix.length)
+  const params = _lookup(Route, request.method, request.url)
+  if (params) {
+    request.params = routes.decompile(Route, params)
+    //return spirit.compose(route_handler(Route.body, Route.args), Route.middleware)(request)
+    return spirit.utils.resolve_response(spirit.utils.callp(Route.body, _destructure(Route.args, request))).then((resp) => {
+      if (typeof resp !== "undefined") {
+        return response.response(request, resp)
+      }
+      return resp
+    })
+  }
+  return undefined
+}
+
+const route_handler = (fn, args, request) => {
     const r = spirit.utils.callp(fn, _destructure(args, request))
     return spirit.utils.resolve_response(r).then((resp) => {
       if (typeof resp !== "undefined") {
@@ -98,7 +121,6 @@ const route_handler = (fn, args) => {
       }
       return resp
     })
-  }
 }
 
 /**
@@ -109,16 +131,26 @@ const route_handler = (fn, args) => {
  * @param {request-map} request - request map
  * @return {Promise} a promise of the result of a Route
  */
-const reduce_r = (arr, request, prefix) => {
+const reduce_r = (arr, request) => {
   return arr.reduce((p, fn) => {
-    return p.then((v) => {
+    return p.then(function(v) {
       if (typeof v !== "undefined") {
         return v // if there is a value, stop iterating
       }
-      // router()(request)
-      return fn(request, prefix, [])
+      return fn.call(undefined, request)
     })
   }, Promise.resolve())
+}
+
+const compile_and_prefix = (_route, prefix) => {
+  if (Array.isArray(_route)) {
+    _route.forEach((r) => {
+      compile_and_prefix(r, prefix)
+    })
+    return _route
+  }
+  _route.prefix = prefix + _route.prefix
+  return _route
 }
 
 /**
@@ -144,13 +176,16 @@ const define = (named, arr_routes) => {
   }
 
   const compile_and_wrap = arr_routes.map((_route) => {
-    if (typeof _route === "function") {
-      // already been wrapped & compiled
-      return _route
+    if (typeof _route[0] === "string") {
+      return routes.compile.apply(undefined, _route)
     }
-    return router(routes.compile.apply(undefined, _route))
+    return compile_and_prefix(_route, named)
   })
 
+  return compile_and_wrap.reduce((a, b) => {
+    return a.concat(b)
+  }, [])
+/*
   return function(request, prefix, middleware) {
     if (!middleware) middleware = []
     if (typeof prefix !== "string") prefix = ""
@@ -163,6 +198,7 @@ const define = (named, arr_routes) => {
       return spirit.compose(handler, middleware)(request)
     }
   }
+ */
 }
 
 /**

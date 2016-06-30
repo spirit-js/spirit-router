@@ -50,7 +50,9 @@ const compile = (method, path, args, body) => {
     method,
     path: { re, keys, path },
     args,
-    body
+    body,
+    prefix: "",
+    middleware: []
   }
 }
 
