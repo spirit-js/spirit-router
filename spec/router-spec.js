@@ -97,4 +97,31 @@ describe("router", () => {
     })
   })
 
+  describe("wrap", () => {
+    it("accepts a single function as a middleware", (done) => {
+      const middleware = (handler) => {
+        return (request) => {
+          return handler(request).then((resp) => {
+            resp.body += "123"
+            return resp
+          })
+        }
+      }
+
+      const fn = router.wrap(["get", "/", [], "hello"], middleware)
+      fn({url: "/", method: "get"}, "").then((resp) => {
+        expect(resp.body).toBe("hello123")
+        done()
+      })
+    })
+
+    it("guards against invalid type for middleware", () => {
+      const route = ["get", "/", [], "hello"]
+      expect(router.wrap.bind(null, route)).toThrowError(/Expected `wrap`/)
+      expect(router.wrap.bind(null, route, "")).toThrowError(/Expected `wrap`/)
+      expect(router.wrap.bind(null, route, {})).toThrowError(/Expected `wrap`/)
+      expect(router.wrap.bind(null, route, [])).not.toThrow()
+    })
+  })
+
 })

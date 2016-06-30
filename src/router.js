@@ -165,10 +165,27 @@ const define = (named, arr_routes) => {
   }
 }
 
+/**
+ * wraps a Route or a routing function
+ * to have middleware associated with it
+ *
+ * @public
+ * @param {Route|function} route - either a Route or a routing function (returned by define)
+ * @param {array} middleware - an array of middleware functions
+ * @return {function} the original `route` wrapped with middleware
+ */
 const wrap = (route, middleware) => {
   if (typeof route !== "function") {
     route = router(routes.compile.apply(undefined, route))
   }
+
+  if (!Array.isArray(middleware)) {
+    if (typeof middleware !== "function") {
+      throw new TypeError("Expected `wrap` to be called with a middleware(function) or an array of middleware")
+    }
+    middleware = [middleware]
+  }
+
   return (request, prefix) => {
     return route(request, prefix, middleware)
   }
