@@ -32,7 +32,7 @@ describe("router.routes", () => {
       const fn = (a)=>{}
       const Route = routes.compile("GeT", "/some/path", ["blAh"], fn)
       expect(Object.keys(Route)).toEqual(["method", "path", "args", "body"])
-      expect(Route.method).toBe("GeT")
+      expect(Route.method).toBe("get")
       expect(Route.args).toEqual(["blAh"])
       expect(Route.body).toBe(fn)
       expect(Route.path.path).toBe("/some/path")

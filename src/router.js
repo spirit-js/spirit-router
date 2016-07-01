@@ -13,7 +13,7 @@ const spirit = require("spirit")
  * @return {array}
  */
 const _lookup = (route, req_method, req_path) => {
-  if (route.method.toLowerCase() === req_method.toLowerCase()) {
+  if (route.method === req_method.toLowerCase()) {
     const params = route.path.re.exec(req_path)
     if (params) {
       return params
@@ -82,15 +82,15 @@ const router = (Route) => {
   return (request, prefix, middleware) => {
     const url = request.url.substring(prefix.length)
     const params = _lookup(Route, request.method, url)
-    if (params) {
-      request.params = routes.decompile(Route, params)
-      const handler = route_handler(Route.body, Route.args)
-      if (middleware.length) {
-        return spirit.compose(handler, middleware)(request)
-      }
-      return handler(request)
+    if (!params) {
+      return undefined
     }
-    return undefined
+    request.params = routes.decompile(Route, params)
+    const handler = route_handler(Route.body, Route.args)
+    if (middleware.length) {
+      return spirit.compose(handler, middleware)(request)
+    }
+    return handler(request)
   }
 }
 
@@ -163,10 +163,10 @@ const define = (named, arr_routes) => {
     prefix = prefix + named
 
     const handler = (req) => {
-      if (compile_and_wrap.length > 1) {
-        return reduce_r(compile_and_wrap, req, prefix)
+      if (compile_and_wrap.length === 1) {
+        return compile_and_wrap[0](req, prefix, [])
       }
-      return compile_and_wrap[0](req, prefix, [])
+      return reduce_r(compile_and_wrap, req, prefix)
     }
 
     if (request.url.indexOf(prefix) === 0) {
@@ -175,7 +175,6 @@ const define = (named, arr_routes) => {
       }
       return handler(request)
     }
-    return undefined
   }
 }
 

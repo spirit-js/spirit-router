@@ -47,7 +47,7 @@ const compile = (method, path, args, body) => {
   }
 
   return {
-    method,
+    method: method.toLowerCase(),
     path: { re, keys, path },
     args,
     body
@@ -65,7 +65,7 @@ const compile = (method, path, args, body) => {
 const decompile = (route, regex_params) => {
   // regex_params is probably null because
   // Route.path.re.exec didn't match anything
-  if (!regex_params) {
+  if (regex_params === null || regex_params.length < 2) {
     return undefined
   }
 
@@ -77,11 +77,7 @@ const decompile = (route, regex_params) => {
     }
   })
 
-  // if params is 'empty' return undefined instead of an empty object
-  if (Object.keys(params).length) {
-    return params
-  }
-  return undefined
+  return params
 }
 
 /*

@@ -1,6 +1,6 @@
 {
   "name": "spirit-router",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "fast router for spirit",
   "main": "index.js",
   "scripts": {
