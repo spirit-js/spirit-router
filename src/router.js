@@ -1,7 +1,7 @@
+const Promise = require("bluebird")
 const routes = require("./routes")
 const response = require("./response")
 const spirit = require("spirit")
-const Promise = require("bluebird")
 
 /**
  * sees if there's a match with route `compiled_route` based on
@@ -13,7 +13,7 @@ const Promise = require("bluebird")
  * @return {array}
  */
 const _lookup = (route, req_method, req_path) => {
-  if (route.method.toLowerCase() === req_method.toLowerCase() || route.method === "*") {
+  if (route.method.toLowerCase() === req_method.toLowerCase()) {
     const params = route.path.re.exec(req_path)
     if (params) {
       return params
@@ -84,8 +84,13 @@ const router = (Route) => {
     const params = _lookup(Route, request.method, url)
     if (params) {
       request.params = routes.decompile(Route, params)
-      return spirit.compose(route_handler(Route.body, Route.args), middleware)(request)
+      const handler = route_handler(Route.body, Route.args)
+      if (middleware.length) {
+        return spirit.compose(handler, middleware)(request)
+      }
+      return handler(request)
     }
+    return undefined
   }
 }
 
@@ -110,15 +115,17 @@ const route_handler = (fn, args) => {
  * @return {Promise} a promise of the result of a Route
  */
 const reduce_r = (arr, request, prefix) => {
-  return arr.reduce((p, fn) => {
-    return p.then((v) => {
+  let p = Promise.resolve()
+  for (let i = 0; i < arr.length; i++) {
+    p = p.then((v) => {
       if (typeof v !== "undefined") {
         return v // if there is a value, stop iterating
       }
       // router()(request)
-      return fn(request, prefix, [])
+      return arr[i](request, prefix, [])
     })
-  }, Promise.resolve())
+  }
+  return p
 }
 
 /**
@@ -145,7 +152,6 @@ const define = (named, arr_routes) => {
 
   const compile_and_wrap = arr_routes.map((_route) => {
     if (typeof _route === "function") {
-      // already been wrapped & compiled
       return _route
     }
     return router(routes.compile.apply(undefined, _route))
@@ -156,12 +162,20 @@ const define = (named, arr_routes) => {
     if (typeof prefix !== "string") prefix = ""
     prefix = prefix + named
 
-    if (request.url.indexOf(prefix) === 0) {
-      const handler = (req) => {
+    const handler = (req) => {
+      if (compile_and_wrap.length > 1) {
         return reduce_r(compile_and_wrap, req, prefix)
       }
-      return spirit.compose(handler, middleware)(request)
+      return compile_and_wrap[0](req, prefix, [])
     }
+
+    if (request.url.indexOf(prefix) === 0) {
+      if (middleware.length) {
+        return spirit.compose(handler, middleware)(request)
+      }
+      return handler(request)
+    }
+    return undefined
   }
 }
 

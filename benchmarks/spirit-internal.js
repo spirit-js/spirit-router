@@ -48,6 +48,22 @@ const test_long_route = function(cb) {
   })
 }
 
+const middleware = (handler) => {
+  return (request) => {
+    return handler(request)
+  }
+}
+
+const test_long_with_middleware = function(cb) {
+  const app = route.define([
+    route.wrap(other, [middleware, middleware]),
+    route.wrap(long_routes, middleware)
+  ])
+  app({ method: "GET", url: "/" }).then((resp) => {
+    cb(resp)
+  })
+}
+
 const test_single_route = function(cb) {
   const app = route.define([
     single_route
@@ -57,21 +73,29 @@ const test_single_route = function(cb) {
   })
 }
 
-const test_multi_route = function(cb) {
+const test_single_with_middleware = function(cb) {
   const app = route.define([
-    other,
-    long_routes
+    route.wrap(single_route, [middleware, middleware, middleware])
   ])
-  app({ method: "GET", url: "/b" }).then((resp) => {
-    app({ method: "GET", url: "/other/a" }).then((resp) => {
-      app({ method: "GET", url: "/c" }).then((resp) => {
-        app({ method: "GET", url: "/e" }).then((resp) => {
-          app({ method: "GET", url: "/" }).then((resp) => {
-            cb(resp)
-          })
-        })
-      })
-    })
+  app({ method: "GET", url: "/" }).then((resp) => {
+    cb(resp)
+  })
+}
+
+const nested = route.define("/test", [
+  route.define("/a", [ route.define("/b", [ route.define("/c", [ route.define("/d", [
+    route.get("/1", [], "nope"),
+    route.get("/2", [], "nope"),
+    route.get("/", [], "Hello World"),
+  ]) ]) ]) ])
+])
+
+const test_nested_route = function(cb) {
+  const app = route.define([
+    nested
+  ])
+  app({ method: "GET", url: "/test/a/b/c/d" }).then((resp) => {
+    cb(resp)
   })
 }
 
@@ -79,11 +103,12 @@ const test_multi_route = function(cb) {
 const tester = function(result) {
   assert.strictEqual(result.status, 200)
   assert.strictEqual(result.body, "Hello World")
-  console.log(result)
 }
 test_long_route(tester)
+test_long_with_middleware(tester)
 test_single_route(tester)
-test_multi_route(tester)
+test_single_with_middleware(tester)
+test_nested_route(tester)
 
 
 suite.add("long routes", function(deferred) {
@@ -96,8 +121,18 @@ suite.add("long routes", function(deferred) {
       deferred.resolve()
     })
   }, { defer: true })
-  .add("multi route", function(deferred) {
-    test_multi_route(function() {
+  .add("nested route", function(deferred) {
+    test_nested_route(function() {
+      deferred.resolve()
+    })
+  }, { defer: true })
+  .add("long route with middleware", function(deferred) {
+    test_long_with_middleware(function() {
+      deferred.resolve()
+    })
+  }, { defer: true })
+  .add("single route with 3 middleware", function(deferred) {
+    test_single_with_middleware(function() {
       deferred.resolve()
     })
   }, { defer: true })
