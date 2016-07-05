@@ -26,25 +26,34 @@ const path_regexp = require("path-to-regexp")
  * @return {Route}
  */
 const compile = (method, path, args, body) => {
-  const keys = []
-  const re = path_regexp(path, keys)
+  const route_err = " [Method: " + method + ", Path: " + path + "]"
 
   // guard
   if (typeof method !== "string"
       || typeof path !== "string"
-      || !Array.isArray(args)) {
-    throw new TypeError("Cannot compile route, invalid argument type to compile: " + method + ", " + path + ", " + args + ", " + body + ", Expecting type: (string, string, array, any)")
+      || (!Array.isArray(args) && typeof args !== "undefined")) {
+    throw new TypeError("Cannot compile route, invalid argument type to compile: " + typeof method + ", " + typeof path + ", " + typeof args + ", Expecting type: (string, string, array, *)")
   }
   if (body === null
-      || typeof body === "undefined"
       || body === ""
       || (typeof body === "object" && Object.keys(body).length === 0)) {
-        throw new TypeError("The body of a route cannot be an empty value")
+        throw new TypeError("The body of a route cannot be an empty value." + route_err)
       }
   // guard
   if (!method || !path) {
-    throw("Cannot compile route, empty string passed, got: " + method + "(method) " + path + " (path)")
+    throw new Error("Cannot compile route, empty string passed." + route_err)
   }
+
+  if (typeof args === "undefined") {
+    args = []
+  }
+
+  if (args.length && typeof body === "undefined") {
+    throw new Error("Cannot compile route with arguments but an body that is undefined. The arguments would never be used." + route_err)
+  }
+
+  const keys = []
+  const re = path_regexp(path, keys)
 
   return {
     method: method.toLowerCase(),

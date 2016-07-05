@@ -40,6 +40,34 @@ describe("router.routes", () => {
       expect(Route.path.re instanceof RegExp).toBe(true)
     })
 
+    it("accepts an empty route body", () => {
+      let r = routes.verb("get", "/")
+      r = routes.compile.apply(undefined, r)
+      expect(r.args).toEqual([])
+      expect(r.body).toBe(undefined)
+
+      r = routes.verb("get", "/", [])
+      r = routes.compile.apply(undefined, r)
+      expect(r.args).toEqual([])
+      expect(r.body).toBe(undefined)
+
+      r = routes.verb("get", "/", [], undefined)
+      r = routes.compile.apply(undefined, r)
+      expect(r.args).toEqual([])
+      expect(r.body).toBe(undefined)
+    })
+
+    it("throws if empty route body but has args", () => {
+      expect(() => {
+        const r = routes.verb("get", "/", ["blah"])
+        routes.compile.apply(undefined, r)
+      }).toThrowError(/arguments would never/)
+      expect(() => {
+        const r = routes.verb("get", "/", ["blah"], undefined)
+        routes.compile.apply(undefined, r)
+      }).toThrowError(/arguments would never/)
+    })
+
     it("the body of a Route can be any value except...", () => {
       // all primitive types are ok except null or undefined
       // undefined is used to "pass" routes, but it makes no

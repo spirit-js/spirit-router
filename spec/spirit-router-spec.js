@@ -263,4 +263,33 @@ describe("router-spec", () => {
       done()
     })
   })
+
+  it("routes with no body get routed (middleware gets called), but the route is considered a pass as the route's body is undefined", (done) => {
+    const middleware = (handler) => {
+      return (request) => {
+        return handler(request).then((resp) => {
+          expect(resp).toBe(undefined)
+          return "ok"
+        })
+      }
+    }
+    let r = route.define([
+      router.route.wrap(router.route.get("/"), middleware),
+      router.route.get("/", [], "hello")
+    ])
+
+    r({ method: "get", url: "/" }).then((resp) => {
+      expect(resp).toBe("ok")
+
+      // same test but without middleware
+      r = route.define([
+        router.route.get("/"),
+        router.route.get("/", [], "hello")
+      ])
+      r({ method: "get", url: "/" }).then((resp) => {
+        expect(resp.body).toBe("hello")
+        done()
+      })
+    })
+  })
 })
