@@ -150,6 +150,12 @@ const define = (named, arr_routes) => {
     named = ""
   }
 
+  if (!Array.isArray(arr_routes)) {
+    throw new TypeError("Expected `define` to be called with an array (of routes)")
+  }
+
+  arr_routes = arr_routes.slice()
+
   const compile_and_wrap = arr_routes.map((_route) => {
     if (typeof _route === "function") {
       return _route
@@ -197,6 +203,8 @@ const wrap = (route, middleware) => {
       throw new TypeError("Expected `wrap` to be called with a middleware(function) or an array of middleware")
     }
     middleware = [middleware]
+  } else {
+    middleware = middleware.slice()
   }
 
   return (request, prefix) => {

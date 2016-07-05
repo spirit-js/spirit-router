@@ -187,7 +187,7 @@ describe("router-spec", () => {
 
   it("can wrap spirit middleware with a Route", (done) => {
     const test = (called) => {
-      expect(called).toBe("12")
+      expect(called).toBe("21")
       return "123"
     }
 
@@ -196,7 +196,7 @@ describe("router-spec", () => {
         return (request) => {
           request.called += "2"
           return handler(request).then((resp) => {
-            expect(resp.body).toBe("123")
+            expect(resp.body).toBe("123b")
             resp.body += "a"
             return resp
           })
@@ -204,7 +204,7 @@ describe("router-spec", () => {
       },
       (handler) => {
         return (request) => {
-          request.called = "1"
+          request.called += "1"
           return handler(request).then((resp) => {
             resp.body += "b"
             return resp
@@ -217,16 +217,16 @@ describe("router-spec", () => {
       router.route.wrap(["get", "/", ["called"], test], middleware)
     ])
 
-    const result = r({ method: "get", url: "/" })
+    const result = r({ method: "get", url: "/", called: "" })
     result.then((resp) => {
-      expect(resp.body).toBe("123ab")
+      expect(resp.body).toBe("123ba")
       done()
     })
   })
 
   it("can wrap the result of define with middleware", (done) => {
     const test = (called) => {
-      expect(called).toBe("1212")
+      expect(called).toBe("2121")
       return "123"
     }
 
@@ -256,10 +256,9 @@ describe("router-spec", () => {
     ])
 
     const rr = router.route.wrap(r, middleware)
-
     const result = rr({ method: "get", url: "/", called: "" })
     result.then((resp) => {
-      expect(resp.body).toBe("123abab")
+      expect(resp.body).toBe("123baba")
       done()
     })
   })
