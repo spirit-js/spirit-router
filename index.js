@@ -11,9 +11,8 @@ exports.route.define = router.define
 exports.route.wrap = router.wrap
 exports.route.verb = routes.verb
 
-// TODO
-var resources = require("./lib/resource")
-exports.route.not_found = {}
-exports.route.resources = resources
+var resource = require("./lib/resource")
+exports.route.not_found = exports.route.notFound = resource.not_found
+exports.route.resources = resource.resources
 
 module.exports = exports

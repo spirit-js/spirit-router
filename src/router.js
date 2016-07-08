@@ -198,6 +198,10 @@ const wrap = (route, middleware) => {
     route = router(routes.compile.apply(undefined, route))
   }
 
+  if (route.length < 3) {
+    throw new Error("Unable to apply middlewares to route, route being passed to `wrap` does not take middlewares.")
+  }
+
   if (!Array.isArray(middleware)) {
     if (typeof middleware !== "function") {
       throw new TypeError("Expected `wrap` to be called with a middleware(function) or an array of middleware")
