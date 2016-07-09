@@ -42,16 +42,16 @@ describe("response map", () => {
     })
   })
 
-  describe("is_response_map", () => {
+  describe("is_ResponseMap", () => {
     it("returns true if response map", () => {
       const t = new response_map.ResponseMap()
-      const r = response_map.is_response_map(t)
+      const r = response_map.is_ResponseMap(t)
       expect(r).toBe(true)
     })
 
     it("returns false for {}response map", () => {
       const t = { status: 200, headers: {}, body: "" }
-      const r = response_map.is_response_map(t)
+      const r = response_map.is_ResponseMap(t)
       expect(r).toBe(false)
     })
   })

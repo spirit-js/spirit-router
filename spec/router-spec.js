@@ -34,15 +34,6 @@ describe("router", () => {
       })
     })
 
-    it("request method is case insensitive", () => {
-      let r = router._lookup(compiled_routes[1], "POsT", "/")
-      expect(r[0]).toBe("/")
-      expect(r instanceof Array).toBe(true)
-
-      r = router._lookup(compiled_routes[3], "CusTom", "/")
-      expect(r[0]).toBe("/")
-      expect(r instanceof Array).toBe(true)
-    })
   })
 
   describe("_destructure", () => {

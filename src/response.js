@@ -72,7 +72,7 @@ const render = (req, resp, middlewares) => {
     }
   })
 
-  if (!response_map.is_response_map(result)) {
+  if (!response_map.is_ResponseMap(result)) {
     throw new Error("unable to render a response (no response middleware knew how to handle it): " + resp)
   }
 
@@ -88,7 +88,7 @@ const render = (req, resp, middlewares) => {
  */
 const response = (req, body) => {
   let rmap = body
-  if (!response_map.is_response_map(body)) {
+  if (!response_map.is_ResponseMap(body)) {
     rmap = response_map.create(body)
   }
   return render(req, rmap, middlewares.list())

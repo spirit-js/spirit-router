@@ -46,7 +46,7 @@ class ResponseMap {
   }
 }
 
-const is_response_map = (obj) => {
+const is_ResponseMap = (obj) => {
   if (typeof obj === "object") {
     return obj instanceof ResponseMap
   }
@@ -96,6 +96,6 @@ const redirect = (status, url) => {
 module.exports = {
   ResponseMap,
   create,
-  is_response_map,
+  is_ResponseMap,
   redirect
 }

@@ -13,7 +13,7 @@ const spirit = require("spirit")
  * @return {array}
  */
 const _lookup = (route, req_method, req_path) => {
-  if (route.method === req_method.toLowerCase()) {
+  if (route.method === req_method) {
     const params = route.path.re.exec(req_path)
     if (params) {
       return params

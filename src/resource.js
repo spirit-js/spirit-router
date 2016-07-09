@@ -13,7 +13,7 @@ const resources = (mount_path="", opts={}) => {
   if (!opts.mime) opts.mime = {}
 
   return (request, prefix) => {
-    if (request.method.toLowerCase() !== "get") {
+    if (request.method !== "get") {
       return undefined
     }
 
