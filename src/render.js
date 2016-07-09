@@ -22,46 +22,40 @@
  * where it makes the most sense.
  */
 
+const spirit = require("spirit")
+const Response = spirit.node.Response
+const path = require("path")
+
 const renderables = {
-  "undefined": function(request, response) {
-    
+  "object": function(request, body) {
+    return new Response(JSON.stringify(body)).type("json")
   },
-  "object": function() {
-    
-  },
-  "array": function() {
-    
-  },
-  "string": function() {
-    
-  },
-  "null": function() {
-    
-  }
-}
 
-const render = (req, resp, renderables) => {
-  // boolean, number, function are unknown what to do with
-  let t = typeof resp.body
-
-  // null, array are objects but it makes sense to think of
-  // them as distinct from just "object" since they are so common
-  if (t === "object") {
-    if (t === null) {
-      t = "null"
-    } else if (Array.isArray(t)) {
-      t = "array"
+  "string": function(request, body) {
+    const rmap = new Response(body)
+    if (body !== "") {
+      rmap.type("html")
     }
+    return rmap
+  },
+
+  "null": function(request, body) {
+    return new Response()
+  },
+
+  "stream" : function(request, body) {
+    const rmap = new Response(body)
+    if (body.path) {
+      rmap.type(path.extname(body.path))
+    }
+    return rmap
+  },
+
+  "buffer": function(request, body) {
+    return new Response(body).type("html")
   }
 
-  if (renderables[t]) {
-    return renderables[t](req, resp)
-  }
-  return resp
 }
 
-module.exports = {
-  renderables,
-  render
-}
+module.exports = renderables
 

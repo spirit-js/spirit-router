@@ -11,6 +11,7 @@
 
 const spirit = require("spirit")
 const Response = spirit.node.Response
+const renderables = require("./render")
 
 const create = (body) => {
   let rmap
@@ -59,49 +60,43 @@ const redirect = (status, url) => {
  * @param {http.Request} req - node http Request object
  * @param {*} body - the result of a route's body function or from a middleware
  */
-const response = (req, body) => {
-  let rmap = body
-  if (spirit.node.response.is_Response(body)) {
-    return render(req, rmap, middlewares.list())
-  } else if (spirit.node.response.is_response(body)) {
-    return rmap
-  } else {
-    rmap = create(body)
-    return render(req, rmap, middlewares.list())
+const render = (req, resp) => {
+  if (spirit.node.response.is_Response(resp)) {
+    return resp
   }
-}
 
-// response middleware; sets a default html & utf-8 charset
-// when no content type headers are set for a response with
-// a string body
-const render_string = (req, resp) => {
-  const {body} = resp
-  if (typeof body === "string" && body !== "") {
-    return resp._type("html")
+  if (spirit.node.response.is_response(resp)) {
+    return create(resp)
   }
-}
 
-// response middleware; converts all numbers to be a string
-// then sets the content type to be html & utf-8 if there
-// is no content-type set
-const render_number = (req, resp) => {
-  const {body} = resp
-  if (typeof body === "number") {
-    resp.body = resp.body.toString()
-    return render_string(req, resp)
-  }
-}
+  let t = typeof resp
 
-// TODO
-const render_buffer = (req, resp) => {
-  const {body} = resp
-  if (Buffer.isBuffer(body)) {
-    return resp._type("html")
+  // null, array are objects but it makes sense to think of
+  // them as distinct from just "object" since they are so common
+  if (t === "object") {
+    if (resp === null) {
+      t = "null"
+      //    } else if (Array.isArray(resp)) {
+      //      t = "array"
+    } else if (Buffer.isBuffer(resp)) {
+      t = "buffer"
+    } else if (typeof resp.pipe === "function") {
+      t = "stream"
+    }
   }
+
+  if (typeof renderables[t] === "function") {
+    return renderables[t](req, resp)
+  }
+
+  // any unknown renderable types such as:
+  // boolean, number, function
+  // just get packaged as a Response
+  return new Response(resp)
 }
 
 module.exports = {
-  response,
+  render,
   create,
   redirect
 }

@@ -99,7 +99,7 @@ const route_handler = (fn, args) => {
     const r = spirit.utils.callp(fn, _destructure(args, request))
     return spirit.utils.resolve_response(r).then((resp) => {
       if (typeof resp !== "undefined") {
-        return response.response(request, resp)
+        return response.render(request, resp)
       }
       return resp
     })

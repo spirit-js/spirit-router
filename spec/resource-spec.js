@@ -62,6 +62,6 @@ describe("not_found", () => {
     result = fn({})
     expect(result.status).toBe(404)
     expect(result.headers).toEqual({})
-    expect(result.body).toBe("")
+    expect(result.body).toBe(undefined)
   })
 })

@@ -12,7 +12,7 @@ describe("router-spec", () => {
     const r = route.define([
       ["get", "/", [], "home"]
     ])
-    const result = r({ method: "get", url: "/"})
+    const result = r({ method: "GET", url: "/"})
     result.then((response) => {
       expect(response).toEqual(jasmine.objectContaining({
         status: 200,
@@ -33,7 +33,7 @@ describe("router-spec", () => {
       ["get", "/a", [], "get a"]
     ])
 
-    const result = r({ method: "post", url: "/a" })
+    const result = r({ method: "POST", url: "/a" })
     result.then((resp) => {
       expect(resp).toEqual(jasmine.objectContaining({
         status: 200,
@@ -50,7 +50,7 @@ describe("router-spec", () => {
     const rr = route.define([ rrr ])
     const r = route.define([ rr ])
 
-    const result = r({ method: "get", url: "/" })
+    const result = r({ method: "GET", url: "/" })
     result.then((resp) => {
       expect(resp).toEqual(jasmine.objectContaining({
         status: 200,
@@ -62,11 +62,11 @@ describe("router-spec", () => {
 
   it("stops routing after it gets a response", (done) => {
     const r = route.define([
-      ["get", "/", [], "ok"],
-      ["get", "/", [], "oops"]
+      ["GET", "/", [], "ok"],
+      ["GET", "/", [], "oops"]
     ])
 
-    const result = r({ method: "get", url: "/" })
+    const result = r({ method: "GET", url: "/" })
     result.then((resp) => {
       expect(resp.body).toBe("ok")
       done()
@@ -75,16 +75,16 @@ describe("router-spec", () => {
 
   it("can specify a prefix used for routing (with define)", (done) => {
     const route_b = route.define("/b", [
-      ["get", "/b", [], "b"]
+      ["GET", "/b", [], "b"]
     ])
     const route_a = route.define("/a", [
-      ["get", "/a", [], "a"]
+      ["GET", "/a", [], "a"]
     ])
 
-    const result = route_a({ method: "get", url: "/a/a" })
+    const result = route_a({ method: "GET", url: "/a/a" })
     result.then((resp) => {
       expect(resp.body).toBe("a")
-      return route_b({ method: "get", url: "/b/b" })
+      return route_b({ method: "GET", url: "/b/b" })
     }).then((resp) => {
       expect(resp.body).toBe("b")
       done()
@@ -93,14 +93,14 @@ describe("router-spec", () => {
 
   it("the prefix when nested will carry over", (done) => {
     const route_b = route.define("/b", [
-      ["get", "/b", [], "b"]
+      ["GET", "/b", [], "b"]
     ])
     const route_a = route.define("/a", [
-      ["get", "/a", [], "a"],
+      ["GET", "/a", [], "a"],
       route_b
     ])
 
-    const result = route_a({ method: "get", url: "/a/b/b" })
+    const result = route_a({ method: "GET", url: "/a/b/b" })
     result.then((resp) => {
       expect(resp.body).toBe("b")
       done()
@@ -113,10 +113,10 @@ describe("router-spec", () => {
       return arg
     }
     const r = route.define("/a", [
-      ["get", "/a", ["url"], test]
+      ["GET", "/a", ["url"], test]
     ])
 
-    const result = r({ method: "get", url: "/a/a" })
+    const result = r({ method: "GET", url: "/a/a" })
     result.then((resp) => {
       expect(resp.body).toBe("/a/a")
       done()
@@ -128,13 +128,13 @@ describe("router-spec", () => {
     const hi = () => { return "hi" }
 
     const r = route.define([
-      ["get", "/a", [], test],
-      ["get", "/a", [], test],
-      ["get", "/a", [], hi],
-      ["get", "/a", [], "no"]
+      ["GET", "/a", [], test],
+      ["GET", "/a", [], test],
+      ["GET", "/a", [], hi],
+      ["GET", "/a", [], "no"]
     ])
 
-    const result = r({ method: "get", url: "/a" })
+    const result = r({ method: "GET", url: "/a" })
     result.then((resp) => {
       expect(resp.body).toBe("hi")
       done()
@@ -145,18 +145,18 @@ describe("router-spec", () => {
     const test = () => {
       return "hello world"
     }
-   const r = route.define([
-      ["get", "/", [], test],
-      ["get", "/string", [], "hello world!"]
+    const r = route.define([
+      ["GET", "/", [], test],
+      ["GET", "/string", [], "hello world!"]
     ])
 
-    const result = r({ method: "get", url: "/" })
+    const result = r({ method: "GET", url: "/" })
     result.then((resp) => {
       expect(resp).toEqual(jasmine.objectContaining({
         status: 200,
         body: "hello world"
       }))
-      return r({ method: "get", url: "/string" })
+      return r({ method: "GET", url: "/string" })
     }).then((resp) => {
       expect(resp).toEqual(jasmine.objectContaining({
         status: 200,
@@ -179,7 +179,7 @@ describe("router-spec", () => {
       ["get", "/test", ["url"], test2]
     ])
 
-    const result = r({ method: "get", url: "/test" })
+    const result = r({ method: "GET", url: "/test" })
     result.then((resp) => {
       done()
     })
@@ -214,10 +214,10 @@ describe("router-spec", () => {
     ]
 
     const r = route.define([
-      router.route.wrap(["get", "/", ["called"], test], middleware)
+      router.route.wrap(["GET", "/", ["called"], test], middleware)
     ])
 
-    const result = r({ method: "get", url: "/", called: "" })
+    const result = r({ method: "GET", url: "/", called: "" })
     result.then((resp) => {
       expect(resp.body).toBe("123ba")
       done()
@@ -252,11 +252,11 @@ describe("router-spec", () => {
     ]
 
     let r = route.define([
-      router.route.wrap(["get", "/", ["called"], test], middleware)
+      router.route.wrap(["GET", "/", ["called"], test], middleware)
     ])
 
     const rr = router.route.wrap(r, middleware)
-    const result = rr({ method: "get", url: "/", called: "" })
+    const result = rr({ method: "GET", url: "/", called: "" })
     result.then((resp) => {
       expect(resp.body).toBe("123baba")
       done()
@@ -277,7 +277,7 @@ describe("router-spec", () => {
       router.route.get("/", [], "hello")
     ])
 
-    r({ method: "get", url: "/" }).then((resp) => {
+    r({ method: "GET", url: "/" }).then((resp) => {
       expect(resp).toBe("ok")
 
       // same test but without middleware
@@ -285,7 +285,7 @@ describe("router-spec", () => {
         router.route.get("/"),
         router.route.get("/", [], "hello")
       ])
-      r({ method: "get", url: "/" }).then((resp) => {
+      r({ method: "GET", url: "/" }).then((resp) => {
         expect(resp.body).toBe("hello")
         done()
       })

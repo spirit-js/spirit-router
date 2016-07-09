@@ -19,11 +19,11 @@ describe("router", () => {
 
 
     it("looks up route", () => {
-      let r = router._lookup(compiled_routes[0], "get", "/")
+      let r = router._lookup(compiled_routes[0], "GET", "/")
       expect(r[0]).toBe("/")
       expect(r instanceof Array).toBe(true)
 
-      r = router._lookup(compiled_routes[2], "get", "/bloop/test")
+      r = router._lookup(compiled_routes[2], "GET", "/bloop/test")
       expect(r[0]).toBe("/bloop/test")
       expect(r instanceof Array).toBe(true)
 
@@ -99,15 +99,15 @@ describe("router", () => {
         }
       }
 
-      const fn = router.wrap(["get", "/", [], "hello"], middleware)
-      fn({url: "/", method: "get"}, "").then((resp) => {
+      const fn = router.wrap(["GET", "/", [], "hello"], middleware)
+      fn({url: "/", method: "GET"}, "").then((resp) => {
         expect(resp.body).toBe("hello123")
         done()
       })
     })
 
     it("guards against invalid type for middleware", () => {
-      const route = ["get", "/", [], "hello"]
+      const route = ["GET", "/", [], "hello"]
       expect(router.wrap.bind(null, route)).toThrowError(/Expected `wrap`/)
       expect(router.wrap.bind(null, route, "")).toThrowError(/Expected `wrap`/)
       expect(router.wrap.bind(null, route, {})).toThrowError(/Expected `wrap`/)

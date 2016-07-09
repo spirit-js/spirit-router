@@ -43,9 +43,7 @@ const test_long_route = function(cb) {
     other,
     long_routes
   ])
-  app({ method: "GET", url: "/" }).then((resp) => {
-    cb(resp)
-  })
+  app({ method: "GET", url: "/" }).then(cb)
 }
 
 const middleware = (handler) => {
@@ -59,27 +57,16 @@ const test_long_with_middleware = function(cb) {
     route.wrap(other, [middleware, middleware]),
     route.wrap(long_routes, middleware)
   ])
-  app({ method: "GET", url: "/" }).then((resp) => {
-    cb(resp)
-  })
+  app({ method: "GET", url: "/" }).then(cb)
 }
 
 const test_single_route = function(cb) {
-  const app = route.define([
-    single_route
-  ])
-  app({ method: "GET", url: "/" }).then((resp) => {
-    cb(resp)
-  })
+  single_route({ method: "GET", url: "/" }).then(cb)
 }
 
 const test_single_with_middleware = function(cb) {
-  const app = route.define([
-    route.wrap(single_route, [middleware, middleware, middleware])
-  ])
-  app({ method: "GET", url: "/" }).then((resp) => {
-    cb(resp)
-  })
+  const app = route.wrap(single_route, [middleware, middleware, middleware])
+  app({ method: "GET", url: "/" }).then(cb)
 }
 
 const nested = route.define("/test", [
@@ -94,9 +81,7 @@ const test_nested_route = function(cb) {
   const app = route.define([
     nested
   ])
-  app({ method: "GET", url: "/test/a/b/c/d" }).then((resp) => {
-    cb(resp)
-  })
+  app({ method: "GET", url: "/test/a/b/c/d" }).then(cb)
 }
 
 // tests the benchmark tests before actually running

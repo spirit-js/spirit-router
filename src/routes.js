@@ -56,7 +56,7 @@ const compile = (method, path, args, body) => {
   const re = path_regexp(path, keys)
 
   return {
-    method: method.toLowerCase(),
+    method: method.toUpperCase(),
     path: { re, keys, path },
     args,
     body
