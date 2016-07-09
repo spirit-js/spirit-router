@@ -12,50 +12,6 @@
 const spirit = require("spirit")
 const Response = spirit.node.Response
 
-// response middlewares
-const middlewares = {
-  _middlewares: [],
-
-  /**
-   * register a middleware function for handling responses
-   *
-   * the order of the execution of the middlewares is
-   * last in, first out
-   *
-   * so what is registered last is called first
-   *
-   * when called with an array (of response middlewares),
-   * it will replace the entire
-   * middlewares with array as it's new middlewares
-   *
-   * @public
-   * @param {function} mw - a middleware function
-   * @return {array} list of response middlewares
-   */
-  register(mw) {
-    if (typeof mw === "function") {
-      this._middlewares.unshift(mw)
-      return this.list()
-    }
-
-    if (Array.isArray(mw)) {
-      this._middlewares = mw.slice()
-      return this.list()
-    }
-
-    throw new TypeError("register expects function/array as argument")
-  },
-
-  /**
-   * returns the array of response middlewares
-   *
-   * @return {array} response middlewares
-   */
-  list() {
-    return this._middlewares.slice()
-  }
-}
-
 const create = (body) => {
   let rmap
   if (spirit.node.response.is_response(body)) {
@@ -97,42 +53,22 @@ const redirect = (status, url) => {
 }
 
 /**
- * runs `resp` through response middlewares
- *
- * @param {request-map} req - in the future a request-map, but as of right now it's a http Request object
- * @param {response-map} resp - a leaf response map
- * @param {array} middlewares - an array of response middlewares
- * @return {response-map}
- */
-const render = (req, resp, middlewares) => {
-  let result
-  middlewares.some((fn) => {
-    result = fn(req, resp)
-    if (typeof result !== "undefined") {
-      return true
-    }
-  })
-
-  if (!spirit.node.response.is_Response(result)) {
-    throw new Error("unable to render a response (no response middleware knew how to handle it): " + resp)
-  }
-
-  return result
-}
-
-/**
  * a intermediate function that tries to convert `body` into
  * a appropriate response map first before calling `send()`
  *
- * @param {http.Response} res - node http Response object
+ * @param {http.Request} req - node http Request object
  * @param {*} body - the result of a route's body function or from a middleware
  */
 const response = (req, body) => {
   let rmap = body
-  if (!spirit.node.response.is_Response(body)) {
+  if (spirit.node.response.is_Response(body)) {
+    return render(req, rmap, middlewares.list())
+  } else if (spirit.node.response.is_response(body)) {
+    return rmap
+  } else {
     rmap = create(body)
+    return render(req, rmap, middlewares.list())
   }
-  return render(req, rmap, middlewares.list())
 }
 
 // response middleware; sets a default html & utf-8 charset
@@ -140,7 +76,7 @@ const response = (req, body) => {
 // a string body
 const render_string = (req, resp) => {
   const {body} = resp
-  if (typeof body === "string") {
+  if (typeof body === "string" && body !== "") {
     return resp._type("html")
   }
 }
@@ -164,20 +100,8 @@ const render_buffer = (req, resp) => {
   }
 }
 
-// init, register default response middleware
-middlewares.register(render_string)
-middlewares.register(render_number)
-middlewares.register(render_buffer)
-
 module.exports = {
   response,
-  render,
-  renderables: {
-    buffer: render_buffer,
-    string: render_string,
-    number: render_number
-  },
-  middlewares,
   create,
   redirect
 }
