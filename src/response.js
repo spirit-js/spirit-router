@@ -9,7 +9,8 @@
  *
  */
 
-const response_map = require("./response-map")
+const spirit = require("spirit")
+const Response = spirit.node.Response
 
 // response middlewares
 const middlewares = {
@@ -55,6 +56,46 @@ const middlewares = {
   }
 }
 
+const create = (body) => {
+  let rmap
+  if (spirit.node.response.is_response(body)) {
+    rmap = new Response(body.body).statusCode(body.status)
+    rmap.headers = body.headers
+  } else {
+    rmap = new Response(body)
+  }
+  return rmap
+}
+
+/**
+ * returns a ResponseMap for a http redirect based
+ * on status code and url, default status code is 302
+ *
+ * moved-permanently 301
+ * found 302
+ * see-other 303
+ * temporary-redirect 307
+ * permanent-redirect 308
+ *
+ * @param {number} status - http status code
+ * @param {string} url - url to redirect to
+ * @return {ResponseMap}
+ */
+const redirect = (status, url) => {
+  if (!url) {
+    url = status
+    status = 302
+  }
+
+  if (typeof status !== "number" || typeof url !== "string") {
+    throw TypeError("invalid arguments to `redirect`, need (number, string) or (string). number is a optional argument for a valid redirect status code, string is required for the URL to redirect")
+  }
+
+  return new Response()
+    .statusCode(status)
+    .location(url)
+}
+
 /**
  * runs `resp` through response middlewares
  *
@@ -72,7 +113,7 @@ const render = (req, resp, middlewares) => {
     }
   })
 
-  if (!response_map.is_ResponseMap(result)) {
+  if (!spirit.node.response.is_Response(result)) {
     throw new Error("unable to render a response (no response middleware knew how to handle it): " + resp)
   }
 
@@ -88,8 +129,8 @@ const render = (req, resp, middlewares) => {
  */
 const response = (req, body) => {
   let rmap = body
-  if (!response_map.is_ResponseMap(body)) {
-    rmap = response_map.create(body)
+  if (!spirit.node.response.is_Response(body)) {
+    rmap = create(body)
   }
   return render(req, rmap, middlewares.list())
 }
@@ -136,5 +177,7 @@ module.exports = {
     string: render_string,
     number: render_number
   },
-  middlewares
+  middlewares,
+  create,
+  redirect
 }

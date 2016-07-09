@@ -1,5 +1,5 @@
 const {route_handler} = require("../lib/router")
-const {create} = require("../lib/response-map")
+const {create} = require("../lib/response")
 const Promise = require("bluebird")
 
 // collect all ResponseMap(val) used for testing

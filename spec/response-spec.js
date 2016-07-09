@@ -1,6 +1,5 @@
 const rewire = require("rewire")
 const response = rewire("../lib/response")
-const response_map = require("../lib/response-map")
 
 describe("router.response", () => {
 
@@ -59,7 +58,7 @@ describe("router.response", () => {
         (req, res) => {
           expect(res).toEqual({ blah: 1, called: 1})
           // have to render a valid response map
-          return response_map.create("hi!")
+          return response.create("hi!")
         }
       ]
 

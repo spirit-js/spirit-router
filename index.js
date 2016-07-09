@@ -1,6 +1,6 @@
 var router = require("./lib/router")
 var routes = require("./lib/routes")
-var response = require("./lib/response-map")
+var response = require("./lib/response")
 
 var exports = {
   route: routes.verbs,

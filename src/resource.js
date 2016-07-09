@@ -1,6 +1,6 @@
 const fs = require("fs")
 const Promise = require("bluebird")
-const response_map = require("./response-map")
+const response = require("./response")
 const path = require("path")
 
 const resources = (mount_path="", opts={}) => {
@@ -38,7 +38,7 @@ const resources = (mount_path="", opts={}) => {
         resolve()
       })
       f.once("open", () => {
-        const rmap = response_map.create(f).type(ext)
+        const rmap = response.create(f).type(ext)
         if (optext) rmap.headers["Content-Type"] = optext
         resolve(rmap)
       })
@@ -48,7 +48,7 @@ const resources = (mount_path="", opts={}) => {
 
 const not_found = (body) => {
   return () => {
-    return response_map.create(body).statusCode(404)
+    return response.create(body).statusCode(404)
   }
 }
 
