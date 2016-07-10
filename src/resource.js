@@ -1,6 +1,6 @@
 const fs = require("fs")
+const {response} = require("spirit").node
 const Promise = require("bluebird")
-const response = require("./response")
 const path = require("path")
 
 const resources = (mount_path="", opts={}) => {
@@ -32,13 +32,14 @@ const resources = (mount_path="", opts={}) => {
     let ext = path.extname(fp)
     const optext = opts.mime[ext]
 
+    // TODO replace this with file_response from spirit
     return new Promise((resolve, reject) => {
       const f = fs.createReadStream(fp)
       f.once("error", () => {
         resolve()
       })
       f.once("open", () => {
-        const rmap = response.create(f).type(ext)
+        const rmap = response(f).type(ext)
         if (optext) rmap.headers["Content-Type"] = optext
         resolve(rmap)
       })
@@ -48,7 +49,7 @@ const resources = (mount_path="", opts={}) => {
 
 const not_found = (body) => {
   return () => {
-    return response.create(body).statusCode(404)
+    return response(body).status_(404)
   }
 }
 

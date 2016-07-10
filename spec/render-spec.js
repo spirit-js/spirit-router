@@ -1,9 +1,11 @@
 const {route_handler} = require("../lib/router")
-const {create} = require("../lib/response")
-const Response = require("spirit").node.Response
+const spirit = require("spirit")
+const Response = spirit.node.Response
 const Promise = require("bluebird")
 const fs = require("fs")
 const stream = require("stream")
+
+const create = spirit.node.response
 
 // every return from route should become a Response
 // if it isn't one already

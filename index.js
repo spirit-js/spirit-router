@@ -1,10 +1,9 @@
 var router = require("./lib/router")
 var routes = require("./lib/routes")
-var response = require("./lib/response")
+var render = require("./lib/render")
 
 var exports = {
-  route: routes.verbs,
-  response: response.create
+  route: routes.verbs
 }
 
 exports.route.define = router.define

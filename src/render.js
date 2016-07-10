@@ -22,17 +22,22 @@
  * where it makes the most sense.
  */
 
-const spirit = require("spirit")
-const Response = spirit.node.Response
+const spirit = require("spirit").node
 const path = require("path")
 
 const renderables = {
   "object": function(request, body) {
-    return new Response(JSON.stringify(body)).type("json")
+    return spirit.response(JSON.stringify(body))
+      .type("json")
+  },
+
+  "array": function(request, body) {
+    return spirit.response(JSON.stringify(body))
+      .type("json")
   },
 
   "string": function(request, body) {
-    const rmap = new Response(body)
+    const rmap = spirit.response(body)
     if (body !== "") {
       rmap.type("html")
     }
@@ -40,11 +45,11 @@ const renderables = {
   },
 
   "null": function(request, body) {
-    return new Response()
+    return spirit.response()
   },
 
-  "stream" : function(request, body) {
-    const rmap = new Response(body)
+  "file-stream" : function(request, body) {
+    const rmap = spirit.response(body)
     if (body.path) {
       rmap.type(path.extname(body.path))
     }
@@ -52,10 +57,41 @@ const renderables = {
   },
 
   "buffer": function(request, body) {
-    return new Response(body).type("html")
+    return spirit.response(body)
+      .type("html")
   }
 
 }
 
-module.exports = renderables
+/**
+ * a intermediate function that tries to convert `body` into
+ * a appropriate response map first before calling `send()`
+ *
+ * @param {http.Request} req - node http Request object
+ * @param {*} body - the result of a route's body function or from a middleware
+ */
+const render = (req, resp) => {
+  if (spirit.is_Response(resp)) {
+    return resp
+  }
 
+  if (spirit.is_response(resp)) {
+    return spirit.response(resp)
+  }
+
+  const t = spirit.utils.type_of(resp)
+
+  if (typeof renderables[t] === "function") {
+    return renderables[t](req, resp)
+  }
+
+  // any unknown renderable types such as:
+  // boolean, number, function
+  // just get packaged as a Response
+  return new spirit.Response(resp)
+}
+
+module.exports = {
+  renderables,
+  render
+}
