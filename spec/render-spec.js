@@ -1,11 +1,8 @@
 const {route_handler} = require("../lib/router")
-const spirit = require("spirit")
-const Response = spirit.node.Response
+const {Response, response} = require("spirit").node
 const Promise = require("bluebird")
 const fs = require("fs")
 const stream = require("stream")
-
-const create = spirit.node.response
 
 // every return from route should become a Response
 // if it isn't one already
@@ -45,7 +42,7 @@ describe("(render) return from route ->", () => {
     })
 
     it("-> Response", (done) => {
-      test_runner(create(undefined), expect_response(200, {}, undefined), done)
+      test_runner(response(undefined), expect_response(200, {}, undefined), done)
     })
 
     it("-> response map", (done) => {
@@ -60,7 +57,7 @@ describe("(render) return from route ->", () => {
     })
 
     it("-> Response", (done) => {
-      test_runner(create(null), expect_response(200, {}, null), done)
+      test_runner(response(null), expect_response(200, {}, null), done)
     })
 
     it("-> response map", (done) => {
@@ -72,7 +69,8 @@ describe("(render) return from route ->", () => {
   describe("string", () => {
     it("->", (done) => {
       const headers = {
-        "Content-Type": "text/html; charset=utf-8"
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": 5
       }
       test_runner("hello", expect_response(200, headers, "hello"), done)
     })
@@ -82,7 +80,11 @@ describe("(render) return from route ->", () => {
     })
 
     it("-> Response", (done) => {
-      test_runner(create("hi"), expect_response(200, {}, "hi"), done)
+      const h = {
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": 2
+      }
+      test_runner(response("hi"), expect_response(200, h, "hi"), done)
     })
 
     it("-> response map", (done) => {
@@ -101,7 +103,7 @@ describe("(render) return from route ->", () => {
       const h = {
         a: 123
       }
-      const r = create(3.14)
+      const r = response(3.14)
       r.headers = h
       test_runner(r, expect_response(200, h, 3.14), done)
     })
@@ -122,8 +124,20 @@ describe("(render) return from route ->", () => {
   describe("buffer", () => {
     it("->", (done) => {
       const b = new Buffer("hello")
-      const h = { "Content-Type": "text/html; charset=utf-8"}
+      const h = {
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Length": 5
+      }
       test_runner(b, expect_response(200, h, b), done)
+    })
+
+    // same as returning a buffer, except html not assumed
+    it("-> Response", (done) => {
+      const b = new Buffer("hello")
+      const h = {
+        "Content-Length": 5
+      }
+      test_runner(response(b), expect_response(200, h, b), done)
     })
   })
 
@@ -144,19 +158,21 @@ describe("(render) return from route ->", () => {
 
   describe("array or object (that is not null, response map, ResponseMap, Stream, Buffer)", () => {
     it("-> array", (done) => {
-      const h = {
-        "Content-Type": "application/json"
-      }
       const b = JSON.stringify([1, 2, 3])
+      const h = {
+        "Content-Type": "application/json",
+        "Content-Length": Buffer.byteLength(b)
+      }
       test_runner([1,2,3], expect_response(200, h, b), done)
     })
 
     it("-> object", (done) => {
-      const h = {
-        "Content-Type": "application/json"
-      }
       const t = { a: 123, b: { c: "hi"} }
       const b = JSON.stringify(t)
+      const h = {
+        "Content-Type": "application/json",
+        "Content-Length": Buffer.byteLength(b)
+      }
       test_runner(t, expect_response(200, h, b), done)
     })
   })

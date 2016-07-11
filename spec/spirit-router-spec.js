@@ -17,7 +17,8 @@ describe("router-spec", () => {
       expect(response).toEqual(jasmine.objectContaining({
         status: 200,
         headers: {
-          "Content-Type": "text/html; charset=utf-8"
+          "Content-Type": "text/html; charset=utf-8",
+          "Content-Length": 4
         },
         body: "home"
       }))

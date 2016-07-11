@@ -55,7 +55,10 @@ describe("not_found", () => {
     let fn = not_found("hi")
     let result = fn({})
     expect(result.status).toBe(404)
-    expect(result.headers).toEqual({})
+    expect(result.headers).toEqual({
+      "Content-Type": "text/html; charset=utf-8",
+      "Content-Length": 2
+    })
     expect(result.body).toBe("hi")
 
     fn = not_found()
