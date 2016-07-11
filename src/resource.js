@@ -1,5 +1,5 @@
 const fs = require("fs")
-const {response} = require("spirit").node
+const {response, file_response} = require("spirit").node
 const Promise = require("bluebird")
 const path = require("path")
 
@@ -13,7 +13,7 @@ const resources = (mount_path="", opts={}) => {
   if (!opts.mime) opts.mime = {}
 
   return (request, prefix) => {
-    if (request.method !== "get") {
+    if (request.method !== "GET") {
       return undefined
     }
 
@@ -28,22 +28,18 @@ const resources = (mount_path="", opts={}) => {
     let idx = mount_pt.length
     if (request.url[idx] === "/") idx += 1
     const fp = opts.root + request.url.slice(idx)
+    const opt_ext = opts.mime[path.extname(fp)]
 
-    let ext = path.extname(fp)
-    const optext = opts.mime[ext]
-
-    // TODO replace this with file_response from spirit
-    return new Promise((resolve, reject) => {
-      const f = fs.createReadStream(fp)
-      f.once("error", () => {
-        resolve()
+    return file_response(fp)
+      .then((resp) => {
+        if (opt_ext) resp.type(opt_ext)
+        return resp
       })
-      f.once("open", () => {
-        const rmap = response(f).type(ext)
-        if (optext) rmap.headers["Content-Type"] = optext
-        resolve(rmap)
+      .catch((err) => {
+        // the error doesn't matter too much,
+        // but catch to surpress and "pass" on this route
+        return undefined
       })
-    })
   }
 }
 

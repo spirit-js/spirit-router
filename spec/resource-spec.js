@@ -3,7 +3,7 @@ const {resources, not_found} = require("../lib/resource")
 describe("resources", () => {
   it("creates a response with a file's stream as it's body", (done) => {
     const fn = resources("/", {root: "lib/"})
-    fn({ url: "/resource.js", method: "get" }, "").then((result) => {
+    fn({ url: "/resource.js", method: "GET" }, "").then((result) => {
       expect(result.status).toBe(200)
       expect(typeof result.body.pipe).toBe("function")
       expect(result.headers["Content-Type"]).toBe("application/javascript")
@@ -13,7 +13,7 @@ describe("resources", () => {
 
   it("returns undefined (Promise) if there is an error reading the file", (done) => {
     const fn = resources("", {root: "lib"})
-    fn({ url: "/resource123.js", method: "get" }, "").then((result) => {
+    fn({ url: "/resource123.js", method: "GET" }, "").then((result) => {
       expect(result).toBe(undefined)
       done()
     })
@@ -21,7 +21,7 @@ describe("resources", () => {
 
   it("can pass an optional mime lookup for content type", (done) => {
     const fn = resources("/", {root: "lib/", mime: {".js": "tester"} })
-    fn({ url: "/resource.js", method: "get" }, "").then((result) => {
+    fn({ url: "/resource.js", method: "GET" }, "").then((result) => {
       expect(result.headers["Content-Type"]).toBe("tester")
       done()
     })
@@ -29,7 +29,7 @@ describe("resources", () => {
 
   it("the first argument, the mount path is optional", (done) => {
     const fn = resources({root: "lib/"})
-    fn({ url: "/resource.js", method: "get" }, "").then((result) => {
+    fn({ url: "/resource.js", method: "GET" }, "").then((result) => {
       expect(result.status).toBe(200)
       expect(typeof result.body.pipe).toBe("function")
       expect(result.headers["Content-Type"]).toBe("application/javascript")
@@ -39,7 +39,7 @@ describe("resources", () => {
 
   it("the first argument, the mount path (and the prefix) are not considered part of the file path", (done) => {
     const fn = resources("/mount", {root: ""})
-    fn({ url: "/a/b/c/mount/lib/resource.js", method: "get" }, "/a/b/c")
+    fn({ url: "/a/b/c/mount/lib/resource.js", method: "GET" }, "/a/b/c")
       .then((result) => {
         expect(result.status).toBe(200)
         expect(typeof result.body.pipe).toBe("function")

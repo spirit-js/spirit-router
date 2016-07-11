@@ -143,11 +143,15 @@ describe("(render) return from route ->", () => {
 
   describe("stream", () => {
     it("-> file", (done) => {
-      const f = new fs.createReadStream(__dirname + "/../index.js")
-      const h = {
-        "Content-Type": "application/javascript"
-      }
-      test_runner(f, expect_response(200, h, f), done)
+      const test_file = __dirname + "/../index.js"
+      const f = new fs.createReadStream(test_file)
+      fs.stat(test_file, (err, file) => {
+        const h = {
+          "Content-Type": "application/javascript",
+          "Content-Length": file.size
+        }
+        test_runner(f, expect_response(200, h, f), done)
+      })
     })
 
     it("-> stream (not file)", (done) => {

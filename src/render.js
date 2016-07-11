@@ -1,11 +1,8 @@
+const spirit = require("spirit").node
+const path = require("path")
+
 /*
- * The following can be done using middleware,
- * but it is different in that they are ran
- * __immediately__ after a route is successful (after it's been
- * converted to a Response). And __before__ flowing back to
- * middleware.
- *
- * The purpose of which is to allow for a low-level way
+ * The purpose of renderables is to allow for a "low-level" way
  * of handling the result of a route that should apply for
  * _all_ instances of the specific type.
  *
@@ -16,15 +13,7 @@
  * be either a string, buffer, stream, or undefined.
  * Otherwise spirit node adapter will not know how to write
  * the response back to the requesting client.
- *
- * That is one of the main goals of the default types below.
- * As well as filling in header values and status code
- * where it makes the most sense.
  */
-
-const spirit = require("spirit").node
-const path = require("path")
-
 const renderables = {
   "object": function(request, body) {
     return spirit.response(JSON.stringify(body))
@@ -37,11 +26,12 @@ const renderables = {
   },
 
   "string": function(request, body) {
-    const rmap = spirit.response(body)
-    if (body !== "") {
-      rmap.type("html")
-    }
-    return rmap
+    return spirit.response(body)
+  },
+
+  "buffer": function(request, body) {
+    return spirit.response(body)
+      .type("html")
   },
 
   "null": function(request, body) {
@@ -49,26 +39,20 @@ const renderables = {
   },
 
   "file-stream" : function(request, body) {
-    const rmap = spirit.response(body)
-    if (body.path) {
-      rmap.type(path.extname(body.path))
-    }
-    return rmap
-  },
-
-  "buffer": function(request, body) {
-    return spirit.response(body)
-      .type("html")
+    return spirit.file_response(body)
   }
-
 }
 
 /**
- * a intermediate function that tries to convert `body` into
- * a appropriate response map first before calling `send()`
+ * Renders a Response of the return of a route
+ * from a matching renderable type
+ *
+ * If it's already a Response nothing happens.
+ * If it's a response map, it is left untouched but
+ * converted to a Response.
  *
  * @param {http.Request} req - node http Request object
- * @param {*} body - the result of a route's body function or from a middleware
+ * @return {Response}
  */
 const render = (req, resp) => {
   if (spirit.is_Response(resp)) {
