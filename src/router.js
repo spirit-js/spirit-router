@@ -96,8 +96,8 @@ const router = (Route) => {
 
 const route_handler = (fn, args) => {
   return (request) => {
-    const r = spirit.utils.callp(fn, _destructure(args, request))
-    return spirit.utils.resolve_response(r).then((resp) => {
+    const r = spirit.callp(fn, _destructure(args, request))
+    return spirit.node.utils.resolve_response(r).then((resp) => {
       if (typeof resp !== "undefined") {
         return render(request, resp)
       }

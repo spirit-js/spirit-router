@@ -148,7 +148,8 @@ describe("(render) return from route ->", () => {
       fs.stat(test_file, (err, file) => {
         const h = {
           "Content-Type": "application/javascript",
-          "Content-Length": file.size
+          "Content-Length": file.size,
+          "Last-Modified": file.mtime.toUTCString()
         }
         test_runner(f, expect_response(200, h, f), done)
       })

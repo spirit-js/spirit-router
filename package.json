@@ -1,14 +1,15 @@
 {
   "name": "spirit-router",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "fast router for spirit",
   "main": "index.js",
   "scripts": {
+    "prepublish": "make release",
     "test": "make test"
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:hnry/spirit-router.git"
+    "url": "git@github.com:spirit-js/spirit-router.git"
   },
   "keywords": [
     "express",
@@ -34,6 +35,6 @@
   "dependencies": {
     "bluebird": "^3.4.x",
     "path-to-regexp": "^1.2.1",
-    "spirit": ">=0.0.8"
+    "spirit": ">=0.0.10"
   }
 }
