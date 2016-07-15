@@ -1,35 +1,30 @@
-const {define, spirit, routes} = require("../../index")
+const spirit = require("spirit")
+const routes = require("../../index")
 
 const http = require("http")
-// use bluebird to make node's fs module return a Promise
-const Promise = require("bluebird")
-const fs = Promise.promisifyAll(require("fs"), { suffix: "Promise" });
-
 const jade = require("jade")
 
-// write a simple function to render jade templates
-//
-// NOTE: you will want to write caching normally, which this
-// example doesn't cover.
-// There is probably a package that does this already on npm
+const cache = {}
+// a very simple example of how to render jade templates
+// since template engines already provide a means to
+// compile templates, all that's really needed is
+// to write a function that is generic and caches templates
 const render = (file, local) => {
-  return fs.readFilePromise(__dirname + "/" + file)
-    .then((data) => {
-      return jade.compile(data)(local)
-    })
+  file = __dirname + "/" + file
+  let f = cache[file]
+  if (!f) {
+    f = cache[file] = jade.compileFile(file)
+  }
+  return f(local)
 }
 
 const index = () => {
-  return render("test.jade", {
-    pageTitle: "title from spirit",
-    name: "spirit + jade !",
-    text: "Hi from spirit"
-  })
+  return render("test.jade", { name: "spirit with jade!" })
 }
 
-const app = define([
+const app = routes.define([
   routes.get("/", [], index)
 ])
 
-const server = http.createServer(spirit([routes.route(app)]))
+const server = http.createServer(spirit.node.adapter(app))
 server.listen(3000)

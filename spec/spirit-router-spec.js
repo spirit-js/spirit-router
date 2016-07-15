@@ -2,11 +2,9 @@
  * spec for how spirit-router works
  */
 
-const router = require("../index")
+const route = require("../index")
 
 describe("router-spec", () => {
-
-  const route = router.route
 
   it("it is a spirit handler, takes a request, returns a Promise of a response map", (done) => {
     const r = route.define([
@@ -215,7 +213,7 @@ describe("router-spec", () => {
     ]
 
     const r = route.define([
-      router.route.wrap(["GET", "/", ["called"], test], middleware)
+      route.wrap(["GET", "/", ["called"], test], middleware)
     ])
 
     const result = r({ method: "GET", url: "/", called: "" })
@@ -253,10 +251,10 @@ describe("router-spec", () => {
     ]
 
     let r = route.define([
-      router.route.wrap(["GET", "/", ["called"], test], middleware)
+      route.wrap(["GET", "/", ["called"], test], middleware)
     ])
 
-    const rr = router.route.wrap(r, middleware)
+    const rr = route.wrap(r, middleware)
     const result = rr({ method: "GET", url: "/", called: "" })
     result.then((resp) => {
       expect(resp.body).toBe("123baba")
@@ -274,8 +272,8 @@ describe("router-spec", () => {
       }
     }
     let r = route.define([
-      router.route.wrap(router.route.get("/"), middleware),
-      router.route.get("/", [], "hello")
+      route.wrap(route.get("/"), middleware),
+      route.get("/", [], "hello")
     ])
 
     r({ method: "GET", url: "/" }).then((resp) => {
@@ -283,8 +281,8 @@ describe("router-spec", () => {
 
       // same test but without middleware
       r = route.define([
-        router.route.get("/"),
-        router.route.get("/", [], "hello")
+        route.get("/"),
+        route.get("/", [], "hello")
       ])
       r({ method: "GET", url: "/" }).then((resp) => {
         expect(resp.body).toBe("hello")

@@ -22,7 +22,7 @@ const resources = (mount_path="", opts={}) => {
       return undefined
     }
 
-    // remove the prefix + url_path from the request url
+    // remove the prefix + mount_path from the request url
     // to get the correct file path
     // additionally, remove any beginning "/"
     let idx = mount_pt.length

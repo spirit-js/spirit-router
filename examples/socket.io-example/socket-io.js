@@ -1,19 +1,16 @@
-const {define, spirit, routes} = require("../../index")
+const {adapter, file_response} = require("spirit").node
+const route = require("../../index")
 const http = require("http")
 
-// use bluebird to make node's fs module return a Promise
-const Promise = require("bluebird")
-const fs = Promise.promisifyAll(require("fs"), { suffix: "Promise" });
-
 const index = () => {
-  return fs.readFilePromise(__dirname + "/index.html")
+  return file_response(__dirname + "/index.html")
 }
 
-const app = define([
-  routes.get("/", [], index)
+const app = route.define([
+  route.get("/", [], index)
 ])
 
-const server = http.createServer(spirit([routes.route(app)]))
+const server = http.createServer(adapter(app))
 const io = require("socket.io")(server)
 
 io.on("connection", (socket) => {

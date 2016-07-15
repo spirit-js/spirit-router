@@ -102,7 +102,7 @@ const verb = (method, path, args, body) => {
 const verbs = {}
 
 const http_methods = [
-  "get", "put", "post", "delete", "head"
+  "get", "put", "post", "delete", "head", "options", "patch"
 ]
 
 http_methods.forEach((method) => {
