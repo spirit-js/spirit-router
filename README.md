@@ -1,7 +1,7 @@
 # spirit-router
 A router for [spirit](https://github.com/spirit-js/spirit).
 
-It provides a _low level_ framework that can be extended through spirit. (it is _not_ a full stack framework or a boilerplate or web platform). It is meant as an alternative to Express, Koa, Hapi, etc.
+When combined with spirit, it provides a _low level_ extensible framework (it is _not_ a full stack batteries included framework or a boilerplate). It is meant as an alternative to Express, Koa, and Hapi.
 
 [![Build Status](https://travis-ci.org/spirit-js/spirit-router.svg?branch=master)](https://travis-ci.org/spirit-js/spirit-router)
 [![Coverage Status](https://coveralls.io/repos/github/spirit-js/spirit-router/badge.svg?branch=master)](https://coveralls.io/github/spirit-js/spirit-router?branch=master)
@@ -16,44 +16,44 @@ This makes testing, re-using, and reading your code much easier, as _"it's just 
 ## Features
 * __Routes are just normal functions that return something__. No more proprietary (req, res, next) functions. This makes it easier to test, re-use, read your routes.
 
-* __Compatible with Express middleware__. (via [spirit-express](https://github.com/spirit-js/spirit-express)) Re-using existing code is important.
+* __Compatible with most Express middleware__. (via [spirit-express](https://github.com/spirit-js/spirit-express)) Re-using existing code is important.
 
-* Error handling with then & catch. __Promises are "first class"__.
+* Error handling with then & catch. __Promises are "first class"__. And so async/await compatible.
 
-* __Fast, very fast__. It outperforms other web frameworks (Express, Koa).
+* __Fast, fast!__. It outperforms other web frameworks (Express, Koa).
 
 ## Example (in ES6)
 ```js
-const http = require("http")
 const spirit = require("spirit")
 const route = require("spirit-router")
+const http = require("http")
 
-const home = (name) => {
+const greet = (name) => {
   return "Hello, " + name
 }
 
 const app = route.define([
-  route.get("/:name", ["name"], home)
+  route.get("/:name", ["name"], greet)
 ])
 
-const site = spirit.node.adapter(app, [])
+const site = spirit.node.adapter(app)
 http.createServer(site).listen(3000)
 ```
-More examples can be found in the [example dir](https://github.com/spirit-js/spirit-router/tree/master/examples).
+
+More examples in the [examples dir](https://github.com/spirit-js/spirit-router/tree/master/examples)
 
 ## Getting Started
 To install:
 `npm install spirit-router`
 
-You will also need [spirit](https://github.com/spirit-js/spirit):
+You will also want to install [spirit](https://github.com/spirit-js/spirit):
 `npm install spirit`
 
-Some resources for getting started: (Not all written yet)
+Resources for getting started: (Not all written yet)
 
-[Guide](https://github.com/spirit-js/spirit-router/tree/master/docs/guide) and [API Docs](https://github.com/spirit-js/spirit-router/tree/master/docs/api)
+- [Quick Tutorial](https://github.com/spirit-js/spirit-router/tree/master/docs/tutorial)
+- [In Depth Guide](https://github.com/spirit-js/spirit-router/tree/master/docs/guide)
+- [API Docs](https://github.com/spirit-js/spirit-router/tree/master/docs/api)
+- [Examples](https://github.com/spirit-js/spirit-router/tree/master/examples)
 
-## Development Status
-__I am in the middle of a re-write and re-organizing.__
-
-
-__I need your help!__ If the project interests you, I would love help. Especially for doc contributions or just as simple as reporting feedback / bugs, etc.
+For those who prefer video tutorials, there will be video series soon.

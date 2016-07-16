@@ -109,6 +109,8 @@ http_methods.forEach((method) => {
   verbs[method] = verb.bind(null, method)
 })
 
+verbs.any = verb.bind(null, "*")
+
 module.exports = {
   verb,
   verbs,

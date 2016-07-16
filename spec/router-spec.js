@@ -7,31 +7,43 @@ describe("router", () => {
     const _routes = require("../lib/routes")
     const routes = _routes.verbs
 
-    let compiled_routes = [
+    let test_routes = [
       routes.get("/", [], ()=>{}),
       routes.post("/", [], ()=>{}),
       routes.get("/bloop/test", [], ()=>{}),
       _routes.verb("cuStom", "/", [], ()=>{}),
     ]
-    compiled_routes = compiled_routes.map((r) => {
+    test_routes = test_routes.map((r) => {
       return _routes.compile.apply(undefined, r)
     })
 
 
     it("looks up route", () => {
-      let r = router._lookup(compiled_routes[0], "GET", "/")
+      let r = router._lookup(test_routes[0], "GET", "/")
       expect(r[0]).toBe("/")
       expect(r instanceof Array).toBe(true)
 
-      r = router._lookup(compiled_routes[2], "GET", "/bloop/test")
+      r = router._lookup(test_routes[2], "GET", "/bloop/test")
       expect(r[0]).toBe("/bloop/test")
       expect(r instanceof Array).toBe(true)
 
       // doesn't match anything
-      compiled_routes.forEach((route) => {
+      test_routes.forEach((route) => {
         r = router._lookup(route, "get", "/bloop/test/123")
         expect(r).toBe(undefined)
       })
+    })
+
+    it("a route method '*' will match any request method", () => {
+      let test = _routes.verb("*", "/", [], "Hello World")
+      test = _routes.compile.apply(undefined, test)
+      let r = router._lookup(test, "GET", "/")
+      expect(r[0]).toBe("/")
+
+      test = routes.any("/test", [], "Hello World")
+      test = _routes.compile.apply(undefined, test)
+      r = router._lookup(test, "POST", "/test")
+      expect(r[0]).toBe("/test")
     })
 
   })

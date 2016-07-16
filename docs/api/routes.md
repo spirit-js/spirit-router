@@ -8,6 +8,8 @@ If you noticed the names correspond to HTTP methods. And when used, it creates a
 
 And they can be used like so, route._api name_( _path_, _args_, _body_ )
 
+The exception being, `any` which creates a Route that matches any method.
+
 If there is a HTTP method not exported as an API, you can create it with [method](#method) API. Internally `spirit-router` uses [method](#method) to create `get`, `put`, `post`, etc.
 
 The return of using any of these APIs is a simple array holding the arguments used. And is considered an _uncompiled Route_. When they are passed to [define](api.md#define), they are then _compiled_ and wrapped with a router function.
