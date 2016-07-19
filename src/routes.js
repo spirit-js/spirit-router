@@ -1,23 +1,24 @@
 /*
- * For Routes, HTTP method shortcuts and converting to a structure for router.lookup
+ * For Routes, HTTP method shortcuts
  */
 
 const path_regexp = require("path-to-regexp")
 
 /**
- * converts a route definition to something more friendly for
- * router.lookup
+ * converts a route definition to something more friendly
+ * to deal with. As well as `path` is converted to a regexp
  *
  * returns a Route, which is just a map
  *
  * The `body` can be of any type or a function that returns
- * just about any type as long as `core.response` knows
- * how to render it
+ * just about any type as long as `render` knows
+ * how to render it, or it is a valid response map.
  *
- * It is simpler here to type check `body` for things that do
- * not make sense at all. As a stringent type check is hard to do
- * especially without running the function / function
- * returns a promise
+ * Type checks are done where types do not make sense.
+ *
+ * `args` and `body` are both optional. If only one of them is
+ * provided, then `body` is assumed as there would be not point
+ * to specify `args` with no `body.`
  *
  * @param {string} method - http verb
  * @param {string} path - URL path of route
@@ -44,11 +45,11 @@ const compile = (method, path, args, body) => {
     throw new Error("Cannot compile route, empty string passed." + route_err)
   }
 
-  if (typeof args === "undefined") {
+  if (args === undefined) {
     args = []
   }
 
-  if (args.length && typeof body === "undefined") {
+  if (args.length && typeof body !== "function") {
     throw new Error("Cannot compile route with arguments but an body that is undefined. The arguments would never be used." + route_err)
   }
 
@@ -89,26 +90,26 @@ const decompile = (route, regex_params) => {
   return params
 }
 
+const verb = (method, path, args, body) => {
+  if (body === undefined) {
+    body = args
+    args = undefined
+  }
+  return [method, path, args, body]
+}
+
 /*
  * The following are just "helper" functions to convert
  * a set of arguments into a array that can then be used
  * for compiling
  */
-const verb = (method, path, args, body) => {
-  return [method, path, args, body]
-}
-
-// used for exporting some common http verbs
 const verbs = {}
-
 const http_methods = [
   "get", "put", "post", "delete", "head", "options", "patch"
 ]
-
 http_methods.forEach((method) => {
   verbs[method] = verb.bind(null, method)
 })
-
 verbs.any = verb.bind(null, "*")
 
 module.exports = {

@@ -8,6 +8,9 @@ describe("router.routes", () => {
     expect(typeof r.put).toEqual("function")
     expect(typeof r.post).toEqual("function")
     expect(typeof r.delete).toEqual("function")
+    expect(typeof r.patch).toEqual("function")
+    expect(typeof r.options).toEqual("function")
+    expect(typeof r.any).toEqual("function")
     expect(r.notexist).toBe(undefined)
 
     // basically returns an array of it's argument plus .method
@@ -46,44 +49,40 @@ describe("router.routes", () => {
       expect(r.args).toEqual([])
       expect(r.body).toBe(undefined)
 
-      r = routes.verb("get", "/", [])
+      r = routes.verb("get", "/", undefined, undefined)
       r = routes.compile.apply(undefined, r)
       expect(r.args).toEqual([])
       expect(r.body).toBe(undefined)
 
-      r = routes.verb("get", "/", [], undefined)
+      r = routes.verb("get", "/", undefined)
       r = routes.compile.apply(undefined, r)
       expect(r.args).toEqual([])
       expect(r.body).toBe(undefined)
     })
 
-    it("throws if empty route body but has args", () => {
+    it("if args is passed, but body is undefined, assumes args is body", () => {
+      let r = routes.verb("get", "/", "hello")
+      r = routes.compile.apply(undefined, r)
+      expect(r.args).toEqual([])
+      expect(r.body).toBe("hello")
+    })
+
+    it("throws if non-function body but has args", () => {
       expect(() => {
-        const r = routes.verb("get", "/", ["blah"])
+        const r = routes.verb("get", "/", ["blah"], "test")
         routes.compile.apply(undefined, r)
       }).toThrowError(/arguments would never/)
       expect(() => {
-        const r = routes.verb("get", "/", ["blah"], undefined)
+        const r = routes.verb("get", "/1", ["blah"], { a: 1 })
+        routes.compile.apply(undefined, r)
+      }).toThrowError(/arguments would never/)
+      expect(() => {
+        const r = routes.verb("get", "/2", ["blah"], [1, 2])
         routes.compile.apply(undefined, r)
       }).toThrowError(/arguments would never/)
     })
 
     it("the body of a Route can be any value except...", () => {
-      // all primitive types are ok except null or undefined
-      // undefined is used to "pass" routes, but it makes no
-      // sense to pass underfined as a body as it'll always pass
-
-      // objects accepted by response are...
-      // array
-      // file object
-      // json
-      // promise
-
-      // for the sake of simplicity though, compile will accept
-      // just about anything and let response throw if there
-      // are type errors (mostly with objects)
-      // as it'll be hard to type check promise values anyway
-
       // ok
       const ok = ["ok", () => {}, 0, [1,2], {a: 1, b: 2}]
       ok.forEach((v) => {
