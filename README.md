@@ -24,7 +24,7 @@ This makes testing, re-using, and reading your code much easier, as _"it's just 
 
 ## Example (in ES6)
 ```js
-const spirit = require("spirit")
+const {adapter} = require("spirit").node
 const route = require("spirit-router")
 const http = require("http")
 
@@ -36,18 +36,14 @@ const app = route.define([
   route.get("/:name", ["name"], greet)
 ])
 
-const site = spirit.node.adapter(app)
-http.createServer(site).listen(3000)
+http.createServer(adapter(app)).listen(3000)
 ```
 
 More examples in the [examples dir](https://github.com/spirit-js/spirit-router/tree/master/examples)
 
 ## Getting Started
 To install:
-`npm install spirit-router`
-
-You will also want to install [spirit](https://github.com/spirit-js/spirit):
-`npm install spirit`
+`npm install spirit spirit-router`
 
 Resources for getting started: (Not all written yet)
 
