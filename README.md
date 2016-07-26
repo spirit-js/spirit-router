@@ -5,6 +5,8 @@ When combined with spirit, it provides a _low level_ extensible framework (it is
 
 [![Build Status](https://travis-ci.org/spirit-js/spirit-router.svg?branch=master)](https://travis-ci.org/spirit-js/spirit-router)
 [![Coverage Status](https://coveralls.io/repos/github/spirit-js/spirit-router/badge.svg?branch=master)](https://coveralls.io/github/spirit-js/spirit-router?branch=master)
+[![Join the chat at https://gitter.im/spirit-js/spirit](https://badges.gitter.im/spirit-js/spirit.svg)](https://gitter.im/spirit-js/spirit?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 
 It __emphasizes clear separation of code between HTTP and your own code__. Routes are normal javascript functions. That means a route can be as simple as:
 ```js
@@ -22,7 +24,7 @@ This makes testing, re-using, and reading your code much easier, as _"it's just 
 
 * __Fast, fast!__. It outperforms other web frameworks (Express, Koa).
 
-## Example (in ES6)
+## Example
 ```js
 const {adapter} = require("spirit").node
 const route = require("spirit-router")
@@ -45,11 +47,19 @@ More examples in the [examples dir](https://github.com/spirit-js/spirit-router/t
 To install:
 `npm install spirit spirit-router`
 
-Resources for getting started: (Not all written yet)
+Resources for getting started:
 
-- [Quick Tutorial](https://github.com/spirit-js/spirit-router/tree/master/docs/tutorial)
-- [In Depth Guide](https://github.com/spirit-js/spirit-router/tree/master/docs/guide)
+- [Guide](https://github.com/spirit-js/spirit-router/tree/master/docs/Guide.md)
 - [API Docs](https://github.com/spirit-js/spirit-router/tree/master/docs/api)
 - [Examples](https://github.com/spirit-js/spirit-router/tree/master/examples)
 
 For those who prefer video tutorials, there will be video series soon.
+
+## Contributing
+All contributions are appreciated and welcomed.
+
+For backwards incompatible changes, or large changes, it would be best if you opened an issue before hand to outline your plans (to avoid conflict later on).
+
+The code style omits ending semi-colons. It also does not use camel case. And one-liners should be avoided unless it's very clear.
+
+To run tests, use `make test`. This will also build changes to src/*, if you do not have "make" installed, you can look at the Makefile to see the steps to accomplish the task.
