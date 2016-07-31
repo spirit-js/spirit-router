@@ -49,11 +49,11 @@ To install:
 
 Resources for getting started:
 
+There is a [intro video](https://www.youtube.com/watch?v=YvxLBd12ZX8).
+
 - [Guide](https://github.com/spirit-js/spirit-router/tree/master/docs/Guide.md)
 - [API Docs](https://github.com/spirit-js/spirit-router/tree/master/docs/api)
 - [Examples](https://github.com/spirit-js/spirit-router/tree/master/examples)
-
-For those who prefer video tutorials, there will be video series soon.
 
 ## Contributing
 All contributions are appreciated and welcomed.
@@ -63,3 +63,4 @@ For backwards incompatible changes, or large changes, it would be best if you op
 The code style omits ending semi-colons. It also does not use camel case. And one-liners should be avoided unless it's very clear.
 
 To run tests, use `make test`. This will also build changes to src/*, if you do not have "make" installed, you can look at the Makefile to see the steps to accomplish the task.
+
