@@ -291,4 +291,75 @@ describe("router-spec", () => {
     })
   })
 
+  it("wrapped route middleware can handle route errors", (done) => {
+    const p = Promise.resolve("hi")
+
+    const test = () => {
+      return p.then(() => {
+        throw "error"
+      })
+    }
+
+    let app = route.define([
+      route.get("/", test)
+    ])
+
+    const middleware = (handler) => {
+      return (request) => {
+        return handler(request).catch((err) => {
+          expect(err).toBe("error")
+          return "hello"
+        })
+      }
+    }
+
+    app = route.wrap(app, middleware)
+
+    app({ method: "GET", url: "/" }).then((resp) => {
+      expect(resp).toBe("hello")
+      done()
+    })
+  })
+
+  it("resolves a route that returns a response body of a promise", (done) => {
+    const test = () => {
+      const p = Promise.resolve("hi")
+      return {
+        status: 200,
+        headers: {},
+        body: p
+      }
+    }
+
+    const app = route.define([
+      route.get("/", test)
+    ])
+
+    app({ method: "GET", url: "/" }).then((resp) => {
+      expect(resp.status).toBe(200)
+      expect(resp.body).toBe("hi")
+      done()
+    })
+  })
+
+  it("resolves a route that returns a response body of a rejected promise", (done) => {
+    const test = () => {
+      const p = Promise.reject("err 1")
+      return {
+        status: 200,
+        headers: {},
+        body: p
+      }
+    }
+
+    const app = route.define([
+      route.get("/", test)
+    ])
+
+    app({ method: "GET", url: "/" }).catch((err) => {
+      expect(err).toBe("err 1")
+      done()
+    })
+  })
+
 })

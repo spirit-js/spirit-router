@@ -10,7 +10,7 @@
 const Benchmark = require("benchmark")
 const suite = new Benchmark.Suite
 
-const {route} = require("../index")
+const route = require("../index")
 
 const assert = require("assert")
 

@@ -49,7 +49,7 @@ To install:
 
 Resources for getting started:
 
-There is a [intro video](https://www.youtube.com/watch?v=YvxLBd12ZX8).
+There are a set of [videos](https://www.youtube.com/watch?v=YvxLBd12ZX8&list=PLHw25bReXDKvHd-5mCjMxVkgDvWrx5IFY) that quickly go over different topics in spirit.
 
 - [Guide](https://github.com/spirit-js/spirit-router/tree/master/docs/Guide.md)
 - [API Docs](https://github.com/spirit-js/spirit-router/tree/master/docs/api)
