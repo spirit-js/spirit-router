@@ -1,7 +1,7 @@
 const spirit = require("spirit")
-const router = require("../../index")
-const route = router.route
+const route = require("../../index") // spirit-router
 
+/*
 const admin_index = () => {
   return "admin index"
 }
@@ -9,6 +9,7 @@ const admin_index = () => {
 const admin = route.define("/admin", [
   route.get("/", [], admin_index)
 ])
+ */
 
 const app = route.define([
   route.get("/a", [], "no"),

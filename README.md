@@ -22,7 +22,7 @@ This makes testing, re-using, and reading your code much easier, as _"it's just 
 
 * Error handling with then & catch. __Promises are "first class"__. And so async/await compatible.
 
-* __Fast, fast!__. It outperforms other web frameworks (Express, Koa).
+* __Fast, fast!__. It outperforms other web frameworks (Express, Koa, Hapi). [Article](https://medium.com/p/node-js-web-frameworks-are-slow-3b7dfb5e204d) showing the performance difference.
 
 ## Example
 ```js
@@ -41,7 +41,7 @@ const app = route.define([
 http.createServer(adapter(app)).listen(3000)
 ```
 
-More examples in the [examples dir](https://github.com/spirit-js/spirit-router/tree/master/examples)
+More examples in can be found [here](https://github.com/spirit-js/examples).
 
 ## Getting Started
 To install:

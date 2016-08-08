@@ -1,5 +1,5 @@
 // NOTE: this doesn't test a router
-// like the express & leaf benchmarks
+// like the other benchmarks
 
 const Koa = require('koa');
 const app = new Koa();

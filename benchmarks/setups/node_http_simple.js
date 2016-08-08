@@ -1,10 +1,10 @@
 const http = require("http")
 
-function handler(req, res) {
-  res.writeHead(200)
-  res.write("Hello World")
-  res.end()
-}
+const s = http.createServer(function(req, res) {
+  res.writeHead(200, {
+    "Content-Length": 11
+  })
+  res.end("Hello World")
+})
 
-const s = http.createServer(handler)
 s.listen(3009)
