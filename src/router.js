@@ -42,9 +42,11 @@ const _destructure = (args, obj) => {
   return args.map((arg) => {
     let v
 
-    // if arg is an array, do not assume lookup
+    // if arg is an array, do not assume / search
     // return it directly
     if (Array.isArray(arg)) {
+      if (arg[0] === "request") return obj
+
       v = lookup(arg[0], obj)
       if (arg.length === 1) {
         return v
@@ -58,7 +60,11 @@ const _destructure = (args, obj) => {
     // return the first thing that's not undefined
     priority.some((p, i) => {
       let o = obj[p]
-      if (p === "") {
+      if (p === "") { // root obj
+        if (arg === "request") {
+          v = obj
+          return true // if root obj & "request" exit loop
+        }
         o = obj
       }
       v = lookup(arg, o)

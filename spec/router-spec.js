@@ -98,6 +98,33 @@ describe("router", () => {
       const r = router._destructure(keys, obj)
       expect(r).toEqual([123, 2])
     })
+
+    it("'request' gives the request map itself", () => {
+      const keys = ["request", "b"]
+      const obj = {
+        a: 1,
+        params: { a: 123 },
+        b: 2
+      }
+      const r = router._destructure(keys, obj)
+      expect(Array.isArray(r)).toBe(true)
+
+      expect(r[0]).toBe(obj)
+      expect(r[0].a).toBe(1)
+
+      expect(r[1]).toBe(2)
+    })
+
+    it("'request' doesn't have priority over params, and is considered part of root", () => {
+      const keys = ["req", "request"]
+      const obj = {
+        params: { req: 123, request: 123 },
+        req: 2,
+        request: 1
+      }
+      const r = router._destructure(keys, obj)
+      expect(r).toEqual([123, 123])
+    })
   })
 
   describe("wrap", () => {
