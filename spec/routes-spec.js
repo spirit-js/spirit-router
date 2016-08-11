@@ -1,6 +1,6 @@
 const routes = require("../lib/routes")
 
-describe("router.routes", () => {
+describe("routes", () => {
 
   it("exports some default shortcut http verb fn for compiling", () => {
     const r = routes.verbs
@@ -43,7 +43,7 @@ describe("router.routes", () => {
       expect(Route.path.re instanceof RegExp).toBe(true)
     })
 
-    it("accepts an empty route body", () => {
+    it("accepts an undefined route body", () => {
       let r = routes.verb("get", "/")
       r = routes.compile.apply(undefined, r)
       expect(r.args).toEqual([])
@@ -58,6 +58,16 @@ describe("router.routes", () => {
       r = routes.compile.apply(undefined, r)
       expect(r.args).toEqual([])
       expect(r.body).toBe(undefined)
+    })
+
+    it("throws when route body is a empty values of different types", () => {
+      expect(() => {
+        routes.compile("method", "path", [], null)
+      }).toThrowError(/body of a route cannot be/)
+
+      expect(() => {
+        routes.compile("method", "path", [], "")
+      }).toThrowError(/body of a route cannot be/)
     })
 
     it("if args is passed, but body is undefined, assumes args is body", () => {
@@ -100,7 +110,7 @@ describe("router.routes", () => {
       invalid.forEach((inv, idx) => {
         const tmp_valid = valid.slice()
         tmp_valid[idx] = inv
-        expect(routes.compile.bind(null, ...tmp_valid)).toThrow()
+        expect(routes.compile.bind(null, ...tmp_valid)).toThrowError(/compile/)
       })
     }
 

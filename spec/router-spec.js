@@ -204,6 +204,33 @@ describe("router", () => {
       expect(router.wrap.bind(null, route, {})).toThrowError(/Expected `wrap`/)
       expect(router.wrap.bind(null, route, [])).not.toThrow()
     })
+
+    it("wrap only works for routing functions with (request, prefix, middleware) signature", () => {
+      // best way prevent this is to use the function signatures
+      // signatures argument length
+      expect(() => {
+        router.wrap((a, b) => {}, [])
+      }).toThrowError(/route being passed to/)
+
+      expect(() => {
+        router.wrap((a) => {}, [])
+      }).toThrowError(/route being passed to/)
+
+      // exceeding 3 is ok
+      router.wrap((a, b, c, d) => {}, [()=>{}])
+    })
+  })
+
+  describe("define", () => {
+    it("will throw if routes argument is not an array", () => {
+      expect(() => {
+        router.define({})
+      }).toThrowError(/Expected `define` to be/)
+
+      expect(() => {
+        router.define("/test", 123)
+      }).toThrowError(/Expected `define` to be/)
+    })
   })
 
 })

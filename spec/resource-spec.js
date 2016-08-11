@@ -64,6 +64,35 @@ describe("resources", () => {
       })
   })
 
+  it("will only run for GET requests", (done) => {
+    const r = resources({ root: "" })
+    const req = { url: "/lib/resource.js", method: "POST" }
+    const result = r(req, "")
+    expect(result).toBe(undefined)
+
+    // now run the same setup with a GET request
+    req.method = "GET"
+
+    r(req, "").then((response) => {
+      test_file_response(response)
+      done()
+    })
+  })
+
+  it("skips if incoming request url does not begin with mount path", (done) => {
+    const r = resources("/hi", {root: ""})
+    const req = { url: "/test/hi/lib/resource.js", method: "GET" }
+    const result = r(req, "")
+    expect(result).toBe(undefined)
+
+    // now run the same setup to pass
+    req.url = "/hi/lib/resource.js"
+    r(req, "").then((response) => {
+      test_file_response(response)
+      done()
+    })
+  })
+
 })
 
 describe("not_found", () => {

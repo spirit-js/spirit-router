@@ -5,7 +5,7 @@ const app = route.define([
   route.get("/", "Hello World")
 ])
 
-const site = spirit.adapter(app, [])
+const site = spirit.adapter(app)
 
 const http = require("http")
 http.createServer(site).listen(3009)

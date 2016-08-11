@@ -67,7 +67,7 @@ func testSetup(testCfg TestConfig, port string, c chan *exec.Cmd) *exec.Cmd {
 }
 
 func runBench(port string, file string) ([]byte, error) {
-	args := []string{"http://localhost:" + port + "/", "-d 7", "-c 50", "-t 8"} //, "| grep 'Requests/sec'"}
+	args := []string{"http://localhost:" + port + "/", "-d 7", "-c 50", "-t 8", "-s resp.lua"} //, "| grep 'Requests/sec'"}
 	cmd := exec.Command("wrk", args...)
 	output, err := cmd.Output()
 	return output, err
