@@ -1,6 +1,6 @@
 {
   "name": "spirit-router",
-  "version": "0.0.8",
+  "version": "0.1.0",
   "description": "fast router for spirit",
   "main": "index.js",
   "scripts": {
@@ -35,6 +35,6 @@
   "dependencies": {
     "bluebird": "^3.4.x",
     "path-to-regexp": "^1.2.1",
-    "spirit": ">=0.0.12"
+    "spirit": ">=0.1.0"
   }
 }

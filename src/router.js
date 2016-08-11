@@ -46,6 +46,7 @@ const _destructure = (args, obj) => {
     // return it directly
     if (Array.isArray(arg)) {
       if (arg[0] === "request") return obj
+      if (arg[0] === "req" && typeof obj["req"] === "function") return obj.req()
 
       v = lookup(arg[0], obj)
       if (arg.length === 1) {
@@ -70,6 +71,10 @@ const _destructure = (args, obj) => {
       v = lookup(arg, o)
       return (typeof v !== "undefined")
     })
+
+    if (arg === "req" && typeof v === "function") {
+      return v()
+    }
     return v
   })
 }

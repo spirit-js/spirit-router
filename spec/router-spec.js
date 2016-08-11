@@ -125,6 +125,58 @@ describe("router", () => {
       const r = router._destructure(keys, obj)
       expect(r).toEqual([123, 123])
     })
+
+    it("'request' does not support nesting / direct look up", () => {
+      const keys = [["request", "params"], "params"]
+      const obj = {
+        params: { req: 123, request: 123 },
+        req: 2,
+        request: 1
+      }
+      const r = router._destructure(keys, obj)
+      // the first result is request and not request.params
+      // despite ["request", "params"]
+      // this is to prevent possible circular look ups
+      expect(r[0]).toEqual(obj)
+      expect(r[1]).toEqual(obj.params)
+    })
+
+    it("can use direct look to override params with the same name", () => {
+      const keys = [["req"], "req"]
+      const obj = {
+        params: { req: 123, request: 123 },
+        req: 2,
+        request: 1
+      }
+      const r = router._destructure(keys, obj)
+      expect(r).toEqual([2, 123])
+    })
+
+    it("'req' gives the raw req object", () => {
+      const keys = ["req"]
+      const obj = {
+        a: 1,
+        params: { a: 123 },
+        b: 2,
+        req: () => { return "raw req" }
+      }
+      let r = router._destructure(keys, obj)
+      expect(Array.isArray(r)).toBe(true)
+      expect(r[0]).toBe("raw req")
+    })
+
+    it("'req' with nesting / direct look up does nothing", () => {
+      const keys = [["req", "raw"]]
+      const obj = {
+        a: 1,
+        params: { a: 123 },
+        b: 2,
+        req: () => { return { raw: true } }
+      }
+      let r = router._destructure(keys, obj)
+      expect(Array.isArray(r)).toBe(true)
+      expect(r[0]).toEqual(obj.req())
+    })
   })
 
   describe("wrap", () => {
