@@ -1,4 +1,5 @@
 const router = require("../lib/router")
+const _destructure = require("../lib/routes")._destructure
 
 describe("router", () => {
 
@@ -50,12 +51,12 @@ describe("router", () => {
 
   describe("_destructure", () => {
     it("returns values in the same order as keys passed in", () => {
-      let result = router._destructure(["a", "c", "b"], {a: 1, b: 2, c: 3})
+      let result = _destructure(["a", "c", "b"], {a: 1, b: 2, c: 3})
       expect(result).toEqual([1, 3, 2])
     })
 
     it("can get the value of a nested object", () => {
-      const result = router._destructure([["a", "nested"], "b"], {
+      const result = _destructure([["a", "nested"], "b"], {
         a: {
           c: 123,
           nested: "nest"
@@ -80,7 +81,7 @@ describe("router", () => {
         d: undefined,
         e: ""
       }
-      const r = router._destructure(keys, obj)
+      const r = _destructure(keys, obj)
       expect(r[0]).toBe(null)
       expect(r[1]).toBe(0)
       expect(r[2]).toBe(false)
@@ -95,7 +96,7 @@ describe("router", () => {
         params: { a: 123 },
         b: 2
       }
-      const r = router._destructure(keys, obj)
+      const r = _destructure(keys, obj)
       expect(r).toEqual([123, 2])
     })
 
@@ -106,7 +107,7 @@ describe("router", () => {
         params: { a: 123 },
         b: 2
       }
-      const r = router._destructure(keys, obj)
+      const r = _destructure(keys, obj)
       expect(Array.isArray(r)).toBe(true)
 
       expect(r[0]).toBe(obj)
@@ -122,7 +123,7 @@ describe("router", () => {
         req: 2,
         request: 1
       }
-      const r = router._destructure(keys, obj)
+      const r = _destructure(keys, obj)
       expect(r).toEqual([123, 123])
     })
 
@@ -133,7 +134,7 @@ describe("router", () => {
         req: 2,
         request: 1
       }
-      const r = router._destructure(keys, obj)
+      const r = _destructure(keys, obj)
       // the first result is request and not request.params
       // despite ["request", "params"]
       // this is to prevent possible circular look ups
@@ -148,7 +149,7 @@ describe("router", () => {
         req: 2,
         request: 1
       }
-      const r = router._destructure(keys, obj)
+      const r = _destructure(keys, obj)
       expect(r).toEqual([2, 123])
     })
 
@@ -160,7 +161,7 @@ describe("router", () => {
         b: 2,
         req: () => { return "raw req" }
       }
-      let r = router._destructure(keys, obj)
+      let r = _destructure(keys, obj)
       expect(Array.isArray(r)).toBe(true)
       expect(r[0]).toBe("raw req")
     })
@@ -173,7 +174,7 @@ describe("router", () => {
         b: 2,
         req: () => { return { raw: true } }
       }
-      let r = router._destructure(keys, obj)
+      let r = _destructure(keys, obj)
       expect(Array.isArray(r)).toBe(true)
       expect(r[0]).toEqual(obj.req())
     })
@@ -217,7 +218,7 @@ describe("router", () => {
       }).toThrowError(/route being passed to/)
 
       // exceeding 3 is ok
-      router.wrap((a, b, c, d) => {}, [()=>{}])
+      router.wrap((a, b, c, d) => { return () => {} }, [()=>{}])
     })
   })
 

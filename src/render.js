@@ -55,7 +55,7 @@ const renderables = {
  * @return {Response}
  */
 const render = (req, resp) => {
-  if (spirit.is_Response(resp)) {
+  if (spirit.utils.is_Response(resp)) {
     return resp
   }
 

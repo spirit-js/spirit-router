@@ -22,98 +22,38 @@ const _lookup = (route, req_method, req_path) => {
 }
 
 /**
- * Destructures against `obj` the keys of `args`
- * Prioritizes `obj`.params then `obj` when look up
- *
- * Returns an array of values ordered the same way as `args`
- *
- * @param {string[]} args - a string of keys to destructure in `obj`
- * @param {object} obj - a map
- * @return {*[]}
- */
-const _destructure = (args, obj) => {
-  function lookup(k, o) {
-    if (typeof o === "undefined") {
-      return undefined
-    }
-    return o[k]
-  }
-
-  return args.map((arg) => {
-    let v
-
-    // if arg is an array, do not assume / search
-    // return it directly
-    if (Array.isArray(arg)) {
-      if (arg[0] === "request") return obj
-      if (arg[0] === "req" && typeof obj["req"] === "function") return obj.req()
-
-      v = lookup(arg[0], obj)
-      if (arg.length === 1) {
-        return v
-      }
-      return v[arg[1]]
-    }
-
-    // otherwise make assumptions of where to look
-    // prioritizing certain keys
-    const priority = ["params", ""] // "" means root of obj
-    // return the first thing that's not undefined
-    priority.some((p, i) => {
-      let o = obj[p]
-      if (p === "") { // root obj
-        if (arg === "request") {
-          v = obj
-          return true // if root obj & "request" exit loop
-        }
-        o = obj
-      }
-      v = lookup(arg, o)
-      return (typeof v !== "undefined")
-    })
-
-    if (arg === "req" && typeof v === "function") {
-      return v()
-    }
-    return v
-  })
-}
-
-/**
- * wraps a Route with router logic
- * If the routing passes, it sets the params on
- * the request map
- *
- * And then calls and returns the Route function
+ * Wraps `Route` with a routing function
+ * If the match fails, it simply returns undefined
+ * If it succeeds, it will call and return Route's handler
  *
  * @param {Route} Route - a Route
- * @return {function}
+ * @return {function} router that wraps over a Route
  */
-const router = (Route) => {
-  return (request, prefix, middleware) => {
+const wrap_router = (Route) => {
+  return (request, prefix) => {
     const url = request.url.substring(prefix.length)
     const params = _lookup(Route, request.method, url)
     if (!params) {
       return undefined
     }
     request.params = routes.decompile(Route, params)
-    const handler = route_handler(Route.body, Route.args)
-    if (middleware.length) {
-      return spirit.compose(handler, middleware)(request)
-    }
-    return handler(request)
+    return Route.handler(request)
   }
 }
 
-const route_handler = (fn, args) => {
-  return (request) => {
-    const r = spirit.callp(fn, _destructure(args, request))
-    return spirit.node.utils.resolve_response(r).then((resp) => {
-      if (typeof resp !== "undefined") {
-        return render(request, resp)
-      }
-      return resp
-    })
+const wrap_context_router = (handler, name) => {
+  return (request, prefix) => {
+    if (prefix === undefined) prefix = request.__prefix
+    if (prefix === undefined) prefix = ""
+    prefix = prefix + name
+
+    if (request.url.indexOf(prefix) === 0) {
+      request.__prefix = prefix
+      return handler(request, prefix).then((response) => {
+        request.__prefix = undefined
+        return response
+      })
+    }
   }
 }
 
@@ -125,18 +65,24 @@ const route_handler = (fn, args) => {
  * @param {request-map} request - request map
  * @return {Promise} a promise of the result of a Route
  */
-const reduce_r = (arr, request, prefix) => {
-  let p = Promise.resolve()
-  for (let i = 0; i < arr.length; i++) {
-    p = p.then((v) => {
-      if (typeof v !== "undefined") {
-        return v // if there is a value, stop iterating
-      }
-      // router()(request)
-      return arr[i](request, prefix, [])
-    })
+const reduce_r = (arr) => {
+  return (request, prefix) => {
+    if (prefix === undefined) prefix = request.__prefix
+
+    // micro optimize
+    //if (arr.length === 1) return arr[0](request, prefix)
+
+    let p = Promise.resolve()
+    for (let i = 0; i < arr.length; i++) {
+      p = p.then((v) => {
+        if (typeof v !== "undefined") {
+          return v // if there is a value, stop iterating
+        }
+        return arr[i](request, prefix)
+      })
+    }
+    return p
   }
-  return p
 }
 
 /**
@@ -167,31 +113,19 @@ const define = (named, arr_routes) => {
 
   arr_routes = arr_routes.slice()
 
-  const compile_and_wrap = arr_routes.map((_route) => {
-    if (typeof _route === "function") {
-      return _route
-    }
-    return router(routes.compile.apply(undefined, _route))
+  const compile_routes = arr_routes.map((_route) => {
+    if (typeof _route === "function") return _route
+    return wrap_router(routes.compile.apply(undefined, _route))
   })
 
-  return function(request, prefix, middleware) {
-    if (!middleware) middleware = []
-    if (typeof prefix !== "string") prefix = ""
-    prefix = prefix + named
 
-    const handler = (req) => {
-      if (compile_and_wrap.length === 1) {
-        return compile_and_wrap[0](req, prefix, [])
-      }
-      return reduce_r(compile_and_wrap, req, prefix)
-    }
+  const handler = reduce_r(compile_routes)
+  const router_and_handle = wrap_context_router(handler, named)
 
-    if (request.url.indexOf(prefix) === 0) {
-      if (middleware.length) {
-        return spirit.compose(handler, middleware)(request)
-      }
-      return handler(request)
-    }
+  return (request, prefix, handler_only) => {
+    if (handler_only === true) return [handler, named]
+
+    return router_and_handle(request, prefix)
   }
 }
 
@@ -205,14 +139,6 @@ const define = (named, arr_routes) => {
  * @return {function} the original `route` wrapped with middleware
  */
 const wrap = (route, middleware) => {
-  if (typeof route !== "function") {
-    route = router(routes.compile.apply(undefined, route))
-  }
-
-  if (route.length < 3) {
-    throw new Error("Unable to apply middlewares to route, route being passed to `wrap` does not take middlewares.")
-  }
-
   if (!Array.isArray(middleware)) {
     if (typeof middleware !== "function") {
       throw new TypeError("Expected `wrap` to be called with a middleware(function) or an array of middleware")
@@ -222,17 +148,26 @@ const wrap = (route, middleware) => {
     middleware = middleware.slice()
   }
 
-  return (request, prefix) => {
-    return route(request, prefix, middleware)
+  // wrapping a route
+  if (typeof route !== "function") {
+    const Route = routes.compile.apply(undefined, route)
+    Route.handler = spirit.compose(Route.handler, middleware)
+    return wrap_router(Route)
   }
+
+  // otherwise wrapping a function (from define)
+  if (route.length < 3) {
+    throw new Error("Unable to apply middlewares to route, route being passed to `wrap` does not take middlewares.")
+  }
+
+  const r = route(undefined, undefined, true)
+  return wrap_context_router(spirit.compose(r[0], middleware), r[1])
 }
 
 module.exports = {
-  _destructure,
   _lookup,
   define, // public
   reduce_r,
-  route_handler,
   wrap,   // public
-  router
+  wrap_router
 }

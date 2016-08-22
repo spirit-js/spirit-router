@@ -1,4 +1,4 @@
-const {route_handler} = require("../lib/router")
+const route_handler = require("../lib/routes").make_handler
 const {Response, response} = require("spirit").node
 const Promise = require("bluebird")
 const fs = require("fs")

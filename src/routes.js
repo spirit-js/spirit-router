@@ -59,10 +59,82 @@ const compile = (method, path, args, body) => {
   return {
     method: method.toUpperCase(),
     path: { re, keys, path },
-    args,
-    body
+    handler: make_handler(body, args)
   }
 }
+
+/**
+ * Destructures against `obj` the keys of `args`
+ * Prioritizes `obj`.params then `obj` when look up
+ *
+ * Returns an array of values ordered the same way as `args`
+ *
+ * @param {string[]} args - a string of keys to destructure in `obj`
+ * @param {object} obj - a map
+ * @return {*[]}
+ */
+const _destructure = (args, obj) => {
+  function lookup(k, o) {
+    if (typeof o === "undefined") {
+      return undefined
+    }
+    return o[k]
+  }
+
+  return args.map((arg) => {
+    let v
+
+    // if arg is an array, do not assume / search
+    // return it directly
+    if (Array.isArray(arg)) {
+      if (arg[0] === "request") return obj
+      if (arg[0] === "req" && typeof obj["req"] === "function") return obj.req()
+
+      v = lookup(arg[0], obj)
+      if (arg.length === 1) {
+        return v
+      }
+      return v[arg[1]]
+    }
+
+    // otherwise make assumptions of where to look
+    // prioritizing certain keys
+    const priority = ["params", ""] // "" means root of obj
+    // return the first thing that's not undefined
+    priority.some((p, i) => {
+      let o = obj[p]
+      if (p === "") { // root obj
+        if (arg === "request") {
+          v = obj
+          return true // if root obj & "request" exit loop
+        }
+        o = obj
+      }
+      v = lookup(arg, o)
+      return (typeof v !== "undefined")
+    })
+
+    if (arg === "req" && typeof v === "function") {
+      return v()
+    }
+    return v
+  })
+}
+
+const spirit = require("spirit")
+const render = require("./render").render
+const make_handler = (body, args) => {
+  return (request) => {
+    const r = spirit.callp(body, _destructure(args, request))
+    return spirit.node.utils.resolve_response(r).then((resp) => {
+      if (typeof resp !== "undefined") {
+        return render(request, resp)
+      }
+      return resp
+    })
+  }
+}
+
 
 /**
  * converts a Route to a map of it's keys and values as matched
@@ -116,5 +188,7 @@ module.exports = {
   verb,
   verbs,
   compile,
-  decompile
+  decompile,
+  make_handler,
+  _destructure
 }
