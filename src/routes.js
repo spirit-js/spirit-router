@@ -3,6 +3,8 @@
  */
 
 const path_regexp = require("path-to-regexp")
+const spirit = require("spirit")
+const render = require("./render").render
 
 /**
  * converts a route definition to something more friendly
@@ -121,8 +123,6 @@ const _destructure = (args, obj) => {
   })
 }
 
-const spirit = require("spirit")
-const render = require("./render").render
 const make_handler = (body, args) => {
   return (request) => {
     const r = spirit.callp(body, _destructure(args, request))
@@ -134,7 +134,6 @@ const make_handler = (body, args) => {
     })
   }
 }
-
 
 /**
  * converts a Route to a map of it's keys and values as matched

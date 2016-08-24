@@ -1,6 +1,5 @@
 const Promise = require("bluebird")
 const routes = require("./routes")
-const render = require("./render").render
 const spirit = require("spirit")
 
 /**
@@ -43,16 +42,11 @@ const wrap_router = (Route) => {
 
 const wrap_context_router = (handler, name) => {
   return (request, prefix) => {
-    if (prefix === undefined) prefix = request.__prefix
-    if (prefix === undefined) prefix = ""
+    if (typeof prefix !== "string") prefix = ""
     prefix = prefix + name
 
     if (request.url.indexOf(prefix) === 0) {
-      request.__prefix = prefix
-      return handler(request, prefix).then((response) => {
-        request.__prefix = undefined
-        return response
-      })
+      return handler(request, prefix)
     }
   }
 }
@@ -62,14 +56,11 @@ const wrap_context_router = (handler, name) => {
  * Stopping when a result is returned by a Route
  *
  * @param {array} arr - an array of wrapped Routes
- * @param {request-map} request - request map
  * @return {Promise} a promise of the result of a Route
  */
 const reduce_r = (arr) => {
   return (request, prefix) => {
-    if (prefix === undefined) prefix = request.__prefix
-
-    // micro optimize
+    // NOTE
     //if (arr.length === 1) return arr[0](request, prefix)
 
     let p = Promise.resolve()
@@ -161,7 +152,55 @@ const wrap = (route, middleware) => {
   }
 
   const r = route(undefined, undefined, true)
-  return wrap_context_router(spirit.compose(r[0], middleware), r[1])
+  return wrap_context_router(compose_args(r[0], middleware), r[1], "_routing")
+}
+
+/**
+ * Like `spirit.compose` but injects a final middleware
+ * and wraps the initial function
+ *
+ * The initial function will save it's arguments on the request
+ * The final injected middleware will clean up the initial func
+ * And call `handler` with the initial arguments to the
+ * initial function
+ *
+ * The main purpose of this is to maintain handler (router)
+ * arguments when the handler is wrapped with middleware
+ *
+ * @param {function} handler final handler function
+ * @param {array} middleware an array of middleware functions
+ * @param {string} prop_name  property name to set on the first argument (request), defaults to "_tmp"
+ * @return {function} function that calls middleware and handler
+ */
+const compose_args = (handler, middleware, prop_name) => {
+  prop_name = prop_name || "_tmp"
+
+  const cleanup = (handler) => {
+    return (obj) => {
+      if (typeof obj !== "object" || obj[prop_name] === undefined) {
+        throw new TypeError("(compose_args) The first argument was changed unexpectedly, (ex: request doesn't exist or has been structurally altered in an unrecoverable way)")
+      }
+
+      // clean up and inject
+      const args = obj[prop_name]
+      delete obj[prop_name]
+      args.unshift(obj)
+      return handler.apply(undefined, args)
+    }
+  }
+
+  middleware.push(cleanup)
+  const fn = spirit.compose(handler, middleware)
+
+  return function(obj) {
+    if (typeof obj !== "object") {
+      throw TypeError("(compose_args) Expected first argument to be an object (ex: request)")
+    }
+    // init
+    const args = Array.prototype.slice.call(arguments)
+    obj[prop_name] = args.slice(1)
+    return fn.apply(undefined, args)
+  }
 }
 
 module.exports = {
@@ -169,5 +208,6 @@ module.exports = {
   define, // public
   reduce_r,
   wrap,   // public
-  wrap_router
+  wrap_router,
+  compose_args
 }

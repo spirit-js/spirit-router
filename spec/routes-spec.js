@@ -31,33 +31,50 @@ describe("routes", () => {
   })
 
   describe("compile", () => {
-    it("turns arguments useful for determining a route into a Route object", () => {
-      const fn = (a)=>{}
+    it("turns arguments useful for determining a route into a Route object", (done) => {
+      const fn = (a)=>{ return a }
       const Route = routes.compile("GeT", "/some/path", ["blAh"], fn)
-      expect(Object.keys(Route)).toEqual(["method", "path", "args", "body"])
+      expect(Object.keys(Route)).toEqual(["method", "path", "handler"])
       expect(Route.method).toBe("GET")
-      expect(Route.args).toEqual(["blAh"])
-      expect(Route.body).toBe(fn)
+      //expect(Route.args).toEqual(["blAh"])
+      //expect(Route.body).toBe(fn)
+      expect(typeof Route.handler).toBe("function")
       expect(Route.path.path).toBe("/some/path")
       expect(Route.path.keys).toEqual([])
       expect(Route.path.re instanceof RegExp).toBe(true)
+
+      Route.handler({ blAh: 4 }).then((result) => {
+        expect(result.body).toBe(4)
+        done()
+      })
     })
 
-    it("accepts an undefined route body", () => {
+    it("accepts an undefined route body", (done) => {
       let r = routes.verb("get", "/")
       r = routes.compile.apply(undefined, r)
-      expect(r.args).toEqual([])
-      expect(r.body).toBe(undefined)
+      //expect(r.args).toEqual([])
+      //expect(r.body).toBe(undefined)
+      r.handler().then((result) => {
+        expect(result).toBe(undefined)
+      })
 
       r = routes.verb("get", "/", undefined, undefined)
       r = routes.compile.apply(undefined, r)
-      expect(r.args).toEqual([])
-      expect(r.body).toBe(undefined)
+      //expect(r.args).toEqual([])
+      //expect(r.body).toBe(undefined)
+      r.handler().then((result) => {
+        expect(result).toBe(undefined)
+      })
+
 
       r = routes.verb("get", "/", undefined)
       r = routes.compile.apply(undefined, r)
-      expect(r.args).toEqual([])
-      expect(r.body).toBe(undefined)
+      //expect(r.args).toEqual([])
+      //expect(r.body).toBe(undefined)
+      r.handler().then((result) => {
+        expect(result).toBe(undefined)
+        done()
+      })
     })
 
     it("throws when route body is a empty values of different types", () => {
@@ -70,11 +87,15 @@ describe("routes", () => {
       }).toThrowError(/body of a route cannot be/)
     })
 
-    it("if args is passed, but body is undefined, assumes args is body", () => {
+    it("if args is passed, but body is undefined, assumes args is body", (done) => {
       let r = routes.verb("get", "/", "hello")
       r = routes.compile.apply(undefined, r)
-      expect(r.args).toEqual([])
-      expect(r.body).toBe("hello")
+      //expect(r.args).toEqual([])
+      //expect(r.body).toBe("hello")
+      r.handler().then((result) => {
+        expect(result.body).toBe("hello")
+        done()
+      })
     })
 
     it("throws if non-function body but has args", () => {
