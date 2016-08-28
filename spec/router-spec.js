@@ -206,7 +206,7 @@ describe("router", () => {
       expect(router.wrap.bind(null, route, [])).not.toThrow()
     })
 
-    it("wrap only works for routing functions with (request, prefix, middleware) signature", () => {
+    it("wrap only works for routing functions with (request, prefix, handler_only) signature", () => {
       // best way prevent this is to use the function signatures
       // signatures argument length
       expect(() => {
@@ -217,8 +217,72 @@ describe("router", () => {
         router.wrap((a) => {}, [])
       }).toThrowError(/route being passed to/)
 
-      // exceeding 3 is ok
-      router.wrap((a, b, c, d) => { return () => {} }, [()=>{}])
+      // exceeding 3 is not ok either
+      expect(() => {
+        router.wrap((a, b, c, d) => { return [()=>{}, ""] }, [()=>{}])
+      }).toThrowError(/route being passed to/)
+
+      // the function takes 3 arguments, but the return is not right
+      expect(() => {
+        router.wrap((a, b, c) => { return "ok" }, [()=>{}])
+      }).toThrowError(/route being passed to/)
+
+      router.wrap((a, b, c) => { return [()=>{}, ""] }, [()=>{}])
+    })
+
+    it("wrapped middleware only initialize once", (done) => {
+      let init = 0
+      let called = 0
+
+      const middleware = (handler) => {
+        init += 1
+        return (req) => {
+          called += 1
+          return handler(req)
+        }
+      }
+
+      // route path (compose)
+      const route_path = router.wrap(["GET", "/test", [], "ok"], middleware)
+
+      // define path (compose_args)
+      const test = (req, prefix, handler_only) => {
+        return [() => {}, "/test"]
+      }
+      const define_path = router.wrap(test, middleware)
+
+
+      const test_run = (fn, req, count, callback) => {
+        if (count > 3) {
+          return callback()
+        }
+        const t = test_run.bind(undefined, fn, req, count + 1, callback)
+        fn(req).then(t)
+      }
+
+      test_run(route_path, {url: "/test", method: "GET"}, 0, () => {
+        expect(init).toBe(2)
+        expect(called).toBe(4)
+        test_run(define_path, {url: "/test"}, 0, () => {
+          expect(init).toBe(2)
+          expect(called).toBe(8)
+          done()
+        })
+      })
+    })
+
+    it("wrapped middleware (with compose_args) will remove _routing when passed to handler", (done) => {
+      const test = (req, prefix, handler_only) => {
+        const test_handler = (req) => {
+          expect(req._routing).toBe(undefined)
+          expect(Object.keys(req)).toEqual(["a", "url"])
+          done()
+        }
+        return [test_handler, "/test"]
+      }
+      const middleware = (handler) => { return (req) => { return handler(req) }}
+      const route = router.wrap(test, middleware)
+      route({ a: 1, url: "/test" })
     })
   })
 

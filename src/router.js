@@ -30,6 +30,7 @@ const _lookup = (route, req_method, req_path) => {
  */
 const wrap_router = (Route) => {
   return (request, prefix) => {
+    if (typeof prefix !== "string") prefix = ""
     const url = request.url.substring(prefix.length)
     const params = _lookup(Route, request.method, url)
     if (!params) {
@@ -147,11 +148,10 @@ const wrap = (route, middleware) => {
   }
 
   // otherwise wrapping a function (from define)
-  if (route.length < 3) {
-    throw new Error("Unable to apply middlewares to route, route being passed to `wrap` does not take middlewares.")
-  }
-
+  const err_msg = "Unable to apply middlewares to route, route being passed to `wrap` does not take middlewares."
+  if (route.length !== 3) throw new Error(err_msg)
   const r = route(undefined, undefined, true)
+  if (typeof r[0] !== "function" || typeof r[1] !== "string") throw new Error(err_msg)
   return wrap_context_router(compose_args(r[0], middleware), r[1], "_routing")
 }
 

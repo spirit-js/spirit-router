@@ -321,6 +321,43 @@ describe("router-spec", () => {
     })
   })
 
+  it("wrapped routes can compose by nesting itself too", (done) => {
+    let called = 0
+
+    const middleware = (handler) => {
+      return (req) => {
+        called += 1
+        return handler(req).then((resp) => {
+          if (!resp) return resp
+          resp.body += "-"
+          return resp
+        })
+      }
+    }
+
+    const rr1 = route.define("/testing", [
+      route.wrap(["get", "/test1", [], undefined], middleware)
+    ])
+    const rr2 = route.define("/testing", [
+      route.wrap(["get", "/test2", [], "home"], middleware)
+    ])
+
+    const r = route.define([
+      route.wrap(rr1, middleware),
+      route.wrap(rr2, middleware)
+    ])
+
+    const result = r({ method: "GET", url: "/testing/test2" })
+    result.then((resp) => {
+      expect(resp).toEqual(jasmine.objectContaining({
+        status: 200,
+        body: "home--"
+      }))
+      expect(called).toBe(3)
+      done()
+    })
+  })
+
   it("resolves a route that returns a response body of a promise", (done) => {
     const test = () => {
       const p = Promise.resolve("hi")
