@@ -69,8 +69,7 @@ describe("(render) return from route ->", () => {
   describe("string", () => {
     it("->", (done) => {
       const headers = {
-        "Content-Type": "text/html; charset=utf-8",
-        "Content-Length": 5
+        "Content-Type": "text/html; charset=utf-8"
       }
       test_runner("hello", expect_response(200, headers, "hello"), done)
     })
@@ -81,8 +80,7 @@ describe("(render) return from route ->", () => {
 
     it("-> Response", (done) => {
       const h = {
-        "Content-Type": "text/html; charset=utf-8",
-        "Content-Length": 2
+        "Content-Type": "text/html; charset=utf-8"
       }
       test_runner(response("hi"), expect_response(200, h, "hi"), done)
     })
@@ -125,8 +123,7 @@ describe("(render) return from route ->", () => {
     it("->", (done) => {
       const b = new Buffer("hello")
       const h = {
-        "Content-Type": "text/html; charset=utf-8",
-        "Content-Length": 5
+        "Content-Type": "text/html; charset=utf-8"
       }
       test_runner(b, expect_response(200, h, b), done)
     })
@@ -134,9 +131,7 @@ describe("(render) return from route ->", () => {
     // same as returning a buffer, except html not assumed
     it("-> Response", (done) => {
       const b = new Buffer("hello")
-      const h = {
-        "Content-Length": 5
-      }
+      const h = {}
       test_runner(response(b), expect_response(200, h, b), done)
     })
   })
@@ -165,8 +160,7 @@ describe("(render) return from route ->", () => {
     it("-> array", (done) => {
       const b = JSON.stringify([1, 2, 3])
       const h = {
-        "Content-Type": "application/json",
-        "Content-Length": Buffer.byteLength(b)
+        "Content-Type": "application/json"
       }
       test_runner([1,2,3], expect_response(200, h, b), done)
     })
@@ -175,8 +169,7 @@ describe("(render) return from route ->", () => {
       const t = { a: 123, b: { c: "hi"} }
       const b = JSON.stringify(t)
       const h = {
-        "Content-Type": "application/json",
-        "Content-Length": Buffer.byteLength(b)
+        "Content-Type": "application/json"
       }
       test_runner(t, expect_response(200, h, b), done)
     })
