@@ -2,6 +2,7 @@ const fs = require("fs")
 const {response, file_response} = require("spirit").node
 const Promise = require("bluebird")
 const path = require("path")
+const render = require("./render").render
 
 const resources = (mount_path="", opts={}) => {
   if (typeof mount_path === "object") {
@@ -43,9 +44,25 @@ const resources = (mount_path="", opts={}) => {
   }
 }
 
-const not_found = (body) => {
-  return () => {
-    return response(body).status_(404)
+/**
+ * Convienance route for always returning a 404 response
+ *
+ * @param {string} method - optional, match only for method, otherwise matches all methods
+ * @param {*} body - valid response body
+ * @returns {function} function that always returns a 404 of the `body` if `method` matches
+ */
+const not_found = (method, body) => {
+  if (!body) {
+    body = method
+    method = "*"
+  } else {
+    method = method.toUpperCase()
+  }
+
+  return (request) => {
+    if (method === "*" || request.method === method) {
+      return render(request, body).status_(404)
+    }
   }
 }
 

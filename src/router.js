@@ -167,9 +167,9 @@ const wrap = (route, middleware) => {
  * The main purpose of this is to maintain handler (router)
  * arguments when the handler is wrapped with middleware
  *
- * @param {function} handler final handler function
- * @param {array} middleware an array of middleware functions
- * @param {string} prop_name  property name to set on the first argument (request), defaults to "_tmp"
+ * @param {function} handler - final handler function
+ * @param {array} middleware - an array of middleware functions
+ * @param {string} prop_name - property name to set on the first argument (request), defaults to "_tmp"
  * @return {function} function that calls middleware and handler
  */
 const compose_args = (handler, middleware, prop_name) => {

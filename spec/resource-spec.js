@@ -111,4 +111,36 @@ describe("not_found", () => {
     expect(result.headers).toEqual({})
     expect(result.body).toBe(undefined)
   })
+
+  it("the body passed in will trigger rendering", () => {
+    let fn = not_found({ a: 1, b: 2 })
+    let result = fn({})
+    expect(result.status).toBe(404)
+    expect(result.headers).toEqual({
+      "Content-Type": "application/json"
+    })
+    expect(result.body).toBe(JSON.stringify({ a: 1, b: 2 }))
+
+    result = not_found([1, 2, 3])({})
+    expect(result.status).toBe(404)
+    expect(result.body).toBe(JSON.stringify([1, 2, 3]))
+  })
+
+  it("rendering is ignored if full response", () => {
+    let fn = not_found({ status: 123, headers: {}, body: { a: 1 }})
+    let result = fn({})
+    expect(result.status).toBe(404)
+    expect(result.headers).toEqual({})
+    expect(result.body).toEqual({ a: 1 })
+  })
+
+  it("optionally will only 404 on specific methods", () => {
+    let fn = not_found("get", "hi")
+    let result = fn({ method: "POST" })
+    expect(result).toBe(undefined)
+
+    result = fn({ method: "GET" })
+    expect(result.status).toBe(404)
+    expect(result.body).toBe("hi")
+  })
 })

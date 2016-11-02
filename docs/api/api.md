@@ -136,15 +136,18 @@ If a Route's body returns a number, this render function will run. Adding 100 to
 
 `notFound` is an alias to `not_found`
 
-A route that always returns a 404 Response with `body` as it's body.
+Convience function for creating a route that always returns a 404 Response with `body` as it's body.
 
-[Source: src/resource.js (not_found)](../../src/resource.js#L46)
+`body` will go through _rendering_.
+
+[Source: src/resource.js (not_found)](../../src/resource.js#L47)
 
 #### Arguments
-* body {undefined|string|buffer|stream} the body of not_found's Response
+* method {string} optional, restricts not_found to a certain http method, otherwise matches all
+* body {*} the body of not_found's Response
 
 #### Return
-{function} a routing function that always matches any request and runs (cannot be wrapped with middlewares)
+{function} a routing function that always returns a 404 Response with `body`
 
 
 -------------------------------------------
