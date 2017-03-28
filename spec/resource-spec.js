@@ -7,7 +7,7 @@ describe("resources", () => {
   const test_file_response = (result) => {
     expect(result.status).toBe(200)
     expect(typeof result.body.pipe).toBe("function")
-    expect(result.body.path).toMatch(/resource.js/)
+    expect(result.body.path).toBe("lib/resource.js")
 
     expect(Object.keys(result.headers).length).toBe(3)
     expect(result.headers["Content-Type"]).toBe("application/javascript")
