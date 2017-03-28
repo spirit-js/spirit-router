@@ -357,11 +357,11 @@ describe("router-spec", () => {
     })
   })
 
-  it("resolves a route that returns a response body of a promise", (done) => {
+  it("resolves a route that returns a response body which is a promise (promise response map -> with promise body)", (done) => {
     const test = () => {
       const p = Promise.resolve("hi")
       return {
-        status: 200,
+        status: 201,
         headers: {},
         body: p
       }
@@ -372,12 +372,14 @@ describe("router-spec", () => {
     ])
 
     app({ method: "GET", url: "/" }).then((resp) => {
-      expect(resp.status).toBe(200)
+      expect(resp.status).toBe(201)
       expect(resp.body).toBe("hi")
       done()
     })
   })
 
+  // FIXME: spec triggers warnings related to async Promise catch
+  // it is related to resolve_response
   it("resolves a route that returns a response body of a rejected promise", (done) => {
     const test = () => {
       const p = Promise.reject("err 1")
