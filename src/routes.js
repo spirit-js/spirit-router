@@ -33,9 +33,9 @@ const compile = (method, path, args, body) => {
 
   // guard
   if (typeof method !== "string"
-      || typeof path !== "string"
+      || (typeof path !== "string" && path instanceof RegExp === false)
       || (!Array.isArray(args) && typeof args !== "undefined")) {
-    throw new TypeError("Cannot compile route, invalid argument type to compile: " + typeof method + ", " + typeof path + ", " + typeof args + ", Expecting type: (string, string, array, *)")
+    throw new TypeError("Cannot compile route, invalid argument types passed to compile; Expecting (verb:string, path:string|regexp, arguments:array, body:*)")
   }
   if (body === null
       || body === ""

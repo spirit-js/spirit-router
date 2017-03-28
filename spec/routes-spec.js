@@ -126,23 +126,39 @@ describe("routes", () => {
       })
     })
 
-    const call_test = (invalid) => {
+    it("accepts regexp or string for path argument", () => {
+      routes.compile("method", "string", [], "body")
+      routes.compile("method", /regexp/, [], "body")
+      routes.compile("method", new RegExp(/abc/), [], "body")
+
+      // path -> array
+      let path = ["method", [1,2,3], [], "body"]
+      expect(routes.compile.bind(null, ...path)).toThrowError(/compile route/)
+      // path -> null
+      path[1] = null
+      expect(routes.compile.bind(null, ...path)).toThrowError(/compile route/)
+      // path -> non regexp object
+      path[1] = {}
+      expect(routes.compile.bind(null, ...path)).toThrowError(/compile route/)
+    })
+
+    const expect_compile_err = (invalid) => {
       const valid = ["string", "string", ["array"], ()=>{}]
       invalid.forEach((inv, idx) => {
         const tmp_valid = valid.slice()
         tmp_valid[idx] = inv
-        expect(routes.compile.bind(null, ...tmp_valid)).toThrowError(/compile/)
+        expect(routes.compile.bind(null, ...tmp_valid)).toThrowError(/compile route/)
       })
     }
 
     it("throws for invalid type arguments", () => {
       // some invalid arguments to compile
-      call_test([123, 123, "a"])
+      expect_compile_err([123, 123, "a"])
     })
 
     it("throws for empty arguments", () => {
       // can only test for first 2 arguments
-      call_test(["", ""])
+      expect_compile_err(["", ""])
     })
   })
 

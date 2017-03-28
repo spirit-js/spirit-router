@@ -13,6 +13,7 @@ describe("router", () => {
       routes.post("/", [], ()=>{}),
       routes.get("/bloop/test", [], ()=>{}),
       _routes.verb("cuStom", "/", [], ()=>{}),
+      routes.get(/abc[0-9]/, [], () => {})
     ]
     test_routes = test_routes.map((r) => {
       return _routes.compile.apply(undefined, r)
@@ -28,11 +29,53 @@ describe("router", () => {
       expect(r[0]).toBe("/bloop/test")
       expect(r instanceof Array).toBe(true)
 
+      r = router._lookup(test_routes[4], "GET", "/abc2")
+      expect(r[0]).toBe("abc2")
+      expect(r.input).toBe("/abc2")
+      expect(r instanceof Array).toBe(true)
+
       // doesn't match anything
       test_routes.forEach((route) => {
         r = router._lookup(route, "get", "/bloop/test/123")
         expect(r).toBe(undefined)
       })
+    })
+
+    it("by default case insensitive", () => {
+      let r = router._lookup(test_routes[2], "GET", "/bloOp/TEst")
+      expect(r[0]).toBe("/bloOp/TEst")
+      expect(r instanceof Array).toBe(true)
+
+      // case sensitive route via RegExp
+      const sens = _routes.compile.apply(undefined, routes.get(/\/bloop\/tesT/, [], ()=>{}))
+      r = router._lookup(sens, "GET", "/bloop/test")
+      expect(r).toBe(undefined)
+      r = router._lookup(sens, "GET", "/bloop/tesT")
+      expect(r instanceof Array).toBe(true)
+    })
+
+    it("by default trailing slash is optional", () => {
+      let r = router._lookup(test_routes[2], "GET", "/bloop/tesT/")
+      expect(r[0]).toBe("/bloop/tesT/")
+      expect(r instanceof Array).toBe(true)
+
+      r = router._lookup(test_routes[2], "GET", "/bloop/tesT")
+      expect(r[0]).toBe("/bloop/tesT")
+      expect(r instanceof Array).toBe(true)
+
+      r = router._lookup(test_routes[2], "GET", "/bloop/tesT//")
+      expect(r).toBe(undefined)
+    })
+
+    it("defining routes with query strings should be avoided and do not work", () => {
+      // 1a. defining routes with query string matching should not work
+      // technically they do work via `path-to-regexp` but it unintentional
+      const t1 = _routes.compile.apply(undefined, routes.get("/query?a=:a", [], ()=>{}))
+      const t2 = _routes.compile.apply(undefined, routes.get("/query?*", [], ()=>{}))
+      // 1b. regardless, spirit will always pass the "request.url" (without query string)
+      // so the look up looks like the following (with the query string dropped):
+      expect(router._lookup(t1, "GET", "/query")).toBe(undefined)
+      expect(router._lookup(t2, "GET", "/query")).toBe(undefined)
     })
 
     it("a route method '*' will match any request method", () => {
