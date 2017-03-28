@@ -10,7 +10,7 @@ const resources = (mount_path="", opts={}) => {
     mount_path = ""
   }
   if (opts.root === undefined) opts.root = "public/"
-  if (opts.root !== "" && opts.root[opts.root.length] !== "/") opts.root = opts.root + "/"
+  if (opts.root !== "" && opts.root[opts.root.length - 1] !== "/") opts.root = opts.root + "/"
   if (typeof opts.mime !== "object") opts.mime = {}
 
   return (request, prefix) => {
