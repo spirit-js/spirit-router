@@ -123,17 +123,14 @@ const _destructure = (args, obj) => {
   })
 }
 
-const make_handler = (body, args) => {
-  return (request) => {
-    const r = spirit.callp(body, _destructure(args, request))
-    return spirit.node.utils.resolve_response(r).then((resp) => {
-      if (typeof resp !== "undefined") {
-        return render(request, resp)
-      }
-      return resp
-    })
-  }
-}
+const make_handler = (body, args) => (request) =>
+      spirit.node.utils.callp_response(body, _destructure(args, request))
+      .then((resp) => {
+        if (typeof resp !== "undefined") {
+          return render(request, resp)
+        }
+        return resp
+      })
 
 /**
  * converts a Route to a map of it's keys and values as matched

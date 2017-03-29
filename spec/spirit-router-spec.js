@@ -362,7 +362,7 @@ describe("router-spec", () => {
       const p = Promise.resolve("hi")
       return {
         status: 201,
-        headers: {},
+        headers: { a: 123 },
         body: p
       }
     }
@@ -373,6 +373,7 @@ describe("router-spec", () => {
 
     app({ method: "GET", url: "/" }).then((resp) => {
       expect(resp.status).toBe(201)
+      expect(resp.headers.a).toBe(123)
       expect(resp.body).toBe("hi")
       done()
     })

@@ -40,6 +40,6 @@
   "dependencies": {
     "bluebird": "3.5.x",
     "path-to-regexp": "^1.2.1",
-    "spirit": "0.5.x"
+    "spirit": "0.6.x"
   }
 }

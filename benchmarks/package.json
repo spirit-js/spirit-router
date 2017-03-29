@@ -9,13 +9,13 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "express": "^4.13.4",
-    "koa": "^2.0.0",
-    "hapi": "^15.0.3",
-    "spirit-common": "0.0.1"
+    "express": "^4.15.2",
+    "koa": "^2.2.0",
+    "hapi": "^16.1.0",
+    "spirit-common": "^0.0.3"
   },
   "dependencies": {
     "benchmark": "^2.1.0",
-    "microtime": "^2.1.1"
+    "microtime": "^2.1.2"
   }
 }

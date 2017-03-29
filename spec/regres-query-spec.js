@@ -26,10 +26,10 @@ describe("regression", () => {
         expect(matched).toBe(true)
         expect(test.url).toBe("/querystring")
         expect(test.path).toBe("/querystring?a=1&b=2")
-        const o = Object.create(null)
-        o.a = "1"
-        o.b = "2"
-        expect(test.query).toEqual(o)
+
+        expect(test.query.a).toBe("1")
+        expect(test.query.b).toBe("2")
+        expect(Object.keys(test.query).length).toBe(2)
         done()
       }
     }
