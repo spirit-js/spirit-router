@@ -10,7 +10,7 @@ describe("resources", () => {
     expect(result.body.path).toBe("lib/resource.js")
 
     expect(Object.keys(result.headers).length).toBe(3)
-    expect(result.headers["Content-Type"]).toBe("application/javascript")
+    expect(result.headers["Content-Type"]).toBe("application/javascript; charset=utf-8")
     expect(result.headers["Content-Length"]).toBeGreaterThan(1500)
     expect(result.headers["Last-Modified"]).not.toBe(undefined)
   }
@@ -117,7 +117,7 @@ describe("not_found", () => {
     let result = fn({})
     expect(result.status).toBe(404)
     expect(result.headers).toEqual({
-      "Content-Type": "application/json"
+      "Content-Type": "application/json; charset=utf-8"
     })
     expect(result.body).toBe(JSON.stringify({ a: 1, b: 2 }))
 

@@ -142,7 +142,7 @@ describe("(render) return from route ->", () => {
       const f = new fs.createReadStream(test_file)
       fs.stat(test_file, (err, file) => {
         const h = {
-          "Content-Type": "application/javascript",
+          "Content-Type": "application/javascript; charset=utf-8",
           "Content-Length": file.size,
           "Last-Modified": file.mtime.toUTCString()
         }
@@ -160,7 +160,7 @@ describe("(render) return from route ->", () => {
     it("-> array", (done) => {
       const b = JSON.stringify([1, 2, 3])
       const h = {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json; charset=utf-8"
       }
       test_runner([1,2,3], expect_response(200, h, b), done)
     })
@@ -169,7 +169,7 @@ describe("(render) return from route ->", () => {
       const t = { a: 123, b: { c: "hi"} }
       const b = JSON.stringify(t)
       const h = {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json; charset=utf-8"
       }
       test_runner(t, expect_response(200, h, b), done)
     })
