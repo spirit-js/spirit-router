@@ -4,3 +4,5 @@ lib/
 coverage/
 TODO.md
 npm-debug.log
+
+*.log
